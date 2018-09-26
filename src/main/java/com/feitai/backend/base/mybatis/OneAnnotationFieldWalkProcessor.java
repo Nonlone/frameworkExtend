@@ -44,7 +44,7 @@ public class OneAnnotationFieldWalkProcessor implements ObjectUtils.FieldWalkPro
                 result = false;
             }
         } catch (IllegalAccessException e) {
-            log.error(String.format("isEffected class<%s> field<%s> error %s", object.getClass(),field.getName(),e.getMessage()), e);
+            log.error(String.format("isEffected class<%s> field<%s> error %s", object.getClass(), field.getName(), e.getMessage()), e);
         }
         if (log.isDebugEnabled()) {
             log.debug(String.format("class<%s> field<%s> isEffected<%s>", object.getClass(), field.getName(), result));
@@ -59,27 +59,20 @@ public class OneAnnotationFieldWalkProcessor implements ObjectUtils.FieldWalkPro
         String sourceField = one.sourceField();
         String targerField = one.targetField();
         Mapper mapper = (Mapper) applicationContext.getBean(classOfMapper);
+        if (mapper == null) {
+            return null;
+        }
         try {
-            Object source = null;
-            Method getter = ObjectUtils.getAccessibleMethodByName(object, "get" + StringUtils.capitalize(sourceField));
-            if (getter != null) {
-                source = getter.invoke(object);
-            } else {
-                Field sourceOfFleid = ObjectUtils.getAccessibleField(object, sourceField);
-                if (sourceOfFleid != null) {
-                    source = sourceOfFleid.get(object);
-                } else {
-                    // 无法获取源字符值
-                    log.error(String.format("process class<%s> field<%s> value is null", object.getClass(),field.getName()));
-                    return null;
-                }
-            }
+            Object source = ObjectUtils.getFieldValue(object,sourceField);
+            log.info(String.format("process class<%s> field<%s> source<%s>", object.getClass(), field.getName(), source));
             Object value = mapper.selectOneByExample(Example.builder(field.getType()).andWhere(Sqls.custom().andEqualTo(targerField, source)).build());
             if (value != null) {
                 return ObjectUtils.fieldWalkProcess(value, fieldWalkProcessor);
             }
-        } catch (IllegalAccessException | InvocationTargetException | MapperException e) {
-            log.error(String.format("process class<%s> field<%s> error %s", object.getClass(),field.getName(),e.getMessage()), e);
+        } catch (MapperException e) {
+            log.error(String.format("mapper process class<%s> field<%s> error %s", object.getClass(), field.getName(), e.getMessage()), e);
+        } catch (Exception e){
+            log.error(String.format("process class<%s> field<%s> error %s", object.getClass(), field.getName(), e.getMessage()), e);
         }
         return null;
     }

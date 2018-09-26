@@ -61,33 +61,26 @@ public class ManyAnnotationFieldWalkProcessor implements ObjectUtils.FieldWalkPr
         String targerField = many.targetField();
         Class<?> sourceClass = many.classOfEntity();
         Mapper mapper = (Mapper) applicationContext.getBean(classOfMapper);
+        if (mapper == null) {
+            return null;
+        }
         try {
-            Object source = null;
-            Method getter = ObjectUtils.getAccessibleMethodByName(object, "get" + StringUtils.capitalize(sourceField));
-            if (getter != null) {
-                source = getter.invoke(object);
-            } else {
-                Field sourceOfFleid = ObjectUtils.getAccessibleField(object, sourceField);
-                if (sourceOfFleid != null) {
-                    source = sourceOfFleid.get(object);
-                } else {
-                    // 无法获取源字符值
-                    log.error(String.format("process class<%s> field<%s> value is null", object.getClass(), field.getName()));
-                    return null;
-                }
-            }
+            Object source = ObjectUtils.getFieldValue(object, sourceField);
+            log.info(String.format("process class<%s> field<%s> source<%s>", object.getClass(), field.getName(), source));
             Object value = mapper.selectByExample(Example.builder(sourceClass).andWhere(Sqls.custom().andEqualTo(targerField, source)).build());
             if (value != null && Collection.class.isAssignableFrom(value.getClass())) {
-                Collection collection = (Collection)value;
+                Collection collection = (Collection) value;
                 Iterator iterator = collection.iterator();
-                while(iterator.hasNext()){
+                while (iterator.hasNext()) {
                     Object subObject = sourceClass.cast(iterator.next());
                     ObjectUtils.fieldWalkProcess(subObject, fieldWalkProcessor);
 
                 }
-                return (List)value;
+                return (List) value;
             }
-        } catch (IllegalAccessException | InvocationTargetException | MapperException e) {
+        } catch (MapperException e) {
+            log.error(String.format("mapper process class<%s> field<%s> error %s", object.getClass(), field.getName(), e.getMessage()), e);
+        } catch (Exception e) {
             log.error(String.format("process class<%s> field<%s> error %s", object.getClass(), field.getName(), e.getMessage()), e);
         }
         return null;
