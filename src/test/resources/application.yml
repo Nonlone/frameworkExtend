@@ -7,6 +7,3 @@ spring:
     host: 10.168.2.202
     username: admin
     password: admin
-logging:
-  level:
-    root: debug
