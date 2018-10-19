@@ -6,14 +6,17 @@ import org.apache.ibatis.mapping.*;
 import org.apache.ibatis.scripting.LanguageDriver;
 import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.session.SqlSession;
+import tk.mybatis.mapper.entity.EntityTable;
+import tk.mybatis.mapper.mapperhelper.EntityHelper;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 /**
  * MyBatis执行sql工具，在写SQL的时候建议使用参数形式的可以是${}或#{}
- *
+ * <p>
  * 不建议将参数直接拼到字符串中，当大量这么使用的时候由于缓存MappedStatement而占用更多的内存
  *
  * @author liuzh
@@ -274,13 +277,14 @@ public class SqlMapper {
          * @param resultType 返回的结果类型
          */
         private void newSelectMappedStatement(String msId, SqlSource sqlSource, final Class<?> resultType) {
-            MappedStatement ms = new MappedStatement.Builder(configuration, msId, sqlSource, SqlCommandType.SELECT)
-                    .resultMaps(new ArrayList<ResultMap>() {
-                        {
-                            add(new ResultMap.Builder(configuration, "defaultResultMap", resultType, new ArrayList<ResultMapping>(0)).build());
-                        }
-                    })
-                    .build();
+            ResultMap resultMap;
+            if (resultType == Map.class) {
+                resultMap = new ResultMap.Builder(configuration, "defaultResultMap", resultType, new ArrayList<ResultMapping>(0)).build();
+            } else {
+                EntityTable entityTable = EntityHelper.getEntityTable(resultType);
+                resultMap = entityTable.getResultMap(configuration);
+            }
+            MappedStatement ms = new MappedStatement.Builder(configuration, msId, sqlSource, SqlCommandType.SELECT).resultMaps(Collections.singletonList(resultMap)).build();
             //缓存
             configuration.addMappedStatement(ms);
         }
