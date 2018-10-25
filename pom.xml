@@ -5,13 +5,15 @@
 
     <groupId>com.feitai</groupId>
     <artifactId>base</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>${app.version}</version>
     <packaging>jar</packaging>
 
     <name>base</name>
     <description>Base Module</description>
 
     <properties>
+        <version>1.0</version>
+        <app.version>${version}-SNAPSHOT</app.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <java.version>1.8</java.version>
@@ -21,6 +23,42 @@
         <tk.mybatis.version>2.0.3</tk.mybatis.version>
         <pagehelper.version>1.2.5</pagehelper.version>
     </properties>
+
+    <profiles>
+        <profile>
+            <id>release</id>
+            <properties>
+                <app.version>${version}</app.version>
+            </properties>
+        </profile>
+    </profiles>
+
+
+    <repositories>
+        <repository>
+            <id>feitai-maven</id>
+            <name>feitai-maven</name>
+            <url>http://maven.feitai.info/nexus/content/groups/public/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
+
+    <distributionManagement>
+        <repository>
+            <id>feitai-release</id>
+            <url>http://maven.feitai.info/nexus/content/repositories/feitai-release/</url>
+        </repository>
+        <snapshotRepository>
+            <id>feitai-snapshot</id>
+            <url>http://maven.feitai.info/nexus/content/repositories/feitai-snapshot/</url>
+        </snapshotRepository>
+    </distributionManagement>
+
 
 
     <dependencies>
