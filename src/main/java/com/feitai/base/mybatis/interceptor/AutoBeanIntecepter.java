@@ -1,5 +1,6 @@
-package com.feitai.base.mybatis;
+package com.feitai.base.mybatis.interceptor;
 
+import com.feitai.base.mybatis.annotation.AutoBeanHandler;
 import com.feitai.utils.ObjectUtils;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -40,7 +41,7 @@ public class AutoBeanIntecepter implements Interceptor {
         Object object = boundSql.getParameterObject();
         Class<?> constrainClass = autoBeanHandler.getAutoBeanConstraintClass();
         if (constrainClass != null && constrainClass.isInstance(object)) {
-            autoBeanHandler.handleBoundSqlAndParameterObject(boundSql,constrainClass.cast(object));
+            autoBeanHandler.handleBoundSqlAndParameterObject(boundSql, constrainClass.cast(object));
         }
         Object result = invocation.proceed();
         log.debug("op<intercept> after Invocation.proceed()");

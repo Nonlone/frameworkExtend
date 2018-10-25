@@ -13,6 +13,7 @@ import java.lang.reflect.Modifier;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * 多个实体处理类
@@ -63,7 +64,12 @@ public class ManyAnnotationFieldWalkProcessor implements ObjectUtils.FieldWalkPr
         }
         try {
             Object source = ObjectUtils.getFieldValue(object, sourceField);
-            log.info(String.format("process class<%s> field<%s> source<%s>", object.getClass(), field.getName(), source));
+            if(log.isDebugEnabled()){
+                log.debug(String.format("process class<%s> field<%s> source<%s>", object.getClass(), field.getName(), source));
+            }
+            if (Objects.isNull(source)) {
+                return null;
+            }
             Object value = mapper.selectByExample(Example.builder(sourceClass).andWhere(Sqls.custom().andEqualTo(targerField, source)).build());
             if (value != null && Collection.class.isAssignableFrom(value.getClass())) {
                 Collection collection = (Collection) value;
@@ -71,7 +77,6 @@ public class ManyAnnotationFieldWalkProcessor implements ObjectUtils.FieldWalkPr
                 while (iterator.hasNext()) {
                     Object subObject = sourceClass.cast(iterator.next());
                     ObjectUtils.fieldWalkProcess(subObject, fieldWalkProcessor);
-
                 }
                 return (List) value;
             }

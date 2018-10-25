@@ -1,5 +1,7 @@
 package com.feitai.base.mybatis;
 
+import com.feitai.utils.ObjectUtils;
+import com.feitai.utils.digest.MD5Utils;
 import org.apache.ibatis.builder.StaticSqlSource;
 import org.apache.ibatis.exceptions.TooManyResultsException;
 import org.apache.ibatis.mapping.*;
@@ -9,6 +11,8 @@ import org.apache.ibatis.session.SqlSession;
 import tk.mybatis.mapper.entity.EntityTable;
 import tk.mybatis.mapper.mapperhelper.EntityHelper;
 
+import javax.sql.DataSource;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -25,6 +29,24 @@ import java.util.Map;
 public class SqlMapper {
     private final MSUtils msUtils;
     private final SqlSession sqlSession;
+
+
+    /**
+     * 构造方法，主动传入数据源
+     *
+     * @param sqlSession
+     */
+    public SqlMapper(SqlSession sqlSession, DataSource dataSource, DatabaseIdProvider databaseIdProvider) throws SQLException {
+        Configuration configuration = sqlSession.getConfiguration();
+        Environment environment = configuration.getEnvironment();
+        String dataBaseId = databaseIdProvider.getDatabaseId(dataSource);
+        environment = new Environment(dataBaseId, environment.getTransactionFactory(), dataSource);
+        configuration.setDatabaseId(dataBaseId);
+        configuration.setEnvironment(environment);
+        this.sqlSession = sqlSession;
+        this.msUtils = new MSUtils(sqlSession.getConfiguration());
+    }
+
 
     /**
      * 构造方法，默认缓存MappedStatement
@@ -254,8 +276,9 @@ public class SqlMapper {
          * @return
          */
         private String newMsId(String sql, SqlCommandType sqlCommandType) {
-            StringBuilder msIdBuilder = new StringBuilder(sqlCommandType.toString());
-            msIdBuilder.append(".").append(sql.hashCode());
+            StringBuilder msIdBuilder = new StringBuilder(SqlMapper.class.getName());
+            msIdBuilder.append(".").append(MD5Utils.md5(sql));
+            msIdBuilder.append(":").append(sqlCommandType.toString());
             return msIdBuilder.toString();
         }
 

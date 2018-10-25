@@ -1,4 +1,4 @@
-package com.feitai.base.mybatis;
+package com.feitai.base.mybatis.annotation;
 
 import org.apache.ibatis.mapping.BoundSql;
 

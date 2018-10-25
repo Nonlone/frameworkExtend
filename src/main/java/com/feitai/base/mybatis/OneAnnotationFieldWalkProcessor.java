@@ -11,6 +11,7 @@ import tk.mybatis.mapper.util.Sqls;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.Collection;
+import java.util.Objects;
 
 /**
  * 单个实体映射处理类
@@ -60,15 +61,20 @@ public class OneAnnotationFieldWalkProcessor implements ObjectUtils.FieldWalkPro
             return null;
         }
         try {
-            Object source = ObjectUtils.getFieldValue(object,sourceField);
-            log.info(String.format("process class<%s> field<%s> source<%s>", object.getClass(), field.getName(), source));
+            Object source = ObjectUtils.getFieldValue(object, sourceField);
+            if (log.isDebugEnabled()) {
+                log.debug(String.format("process class<%s> field<%s> source<%s>", object.getClass(), field.getName(), source));
+            }
+            if (Objects.isNull(source)) {
+                return null;
+            }
             Object value = mapper.selectOneByExample(Example.builder(field.getType()).andWhere(Sqls.custom().andEqualTo(targerField, source)).build());
             if (value != null) {
                 return ObjectUtils.fieldWalkProcess(value, fieldWalkProcessor);
             }
         } catch (MapperException e) {
             log.error(String.format("mapper process class<%s> field<%s> error %s", object.getClass(), field.getName(), e.getMessage()), e);
-        } catch (Exception e){
+        } catch (Exception e) {
             log.error(String.format("process class<%s> field<%s> error %s", object.getClass(), field.getName(), e.getMessage()), e);
         }
         return null;
