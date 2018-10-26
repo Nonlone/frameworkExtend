@@ -53,7 +53,7 @@ public class ClassPrefixMultiDataSourceInterceptor extends AbstractMultiDataSour
             return result;
         }
         if (SqlMapper.class.equals(mapperClass)) {
-            if(log.isDebugEnabled()) {
+            if (log.isDebugEnabled()) {
                 log.debug("op<intercept> SqlMapper not to intercept");
             }
             Object result = invocation.proceed();
@@ -65,7 +65,7 @@ public class ClassPrefixMultiDataSourceInterceptor extends AbstractMultiDataSour
             setConnection(invocation, key);
         }
         Object result = invocation.proceed();
-        if(log.isDebugEnabled()) {
+        if (log.isDebugEnabled()) {
             log.debug("op<intercept> after Invocation.proceed()");
         }
         return result;
@@ -73,6 +73,7 @@ public class ClassPrefixMultiDataSourceInterceptor extends AbstractMultiDataSour
 
     /**
      * 根据类获取Key
+     *
      * @param classOfT
      * @return
      */
@@ -86,12 +87,17 @@ public class ClassPrefixMultiDataSourceInterceptor extends AbstractMultiDataSour
         }
         // 查询前缀映射
         if (isCheckClassPrefixMap) {
+            ClassPrefixMatcher classPrefixMatcher = null;
             String mapperClassString = classOfT.getName();
             for (Map.Entry<String, String> entry : classPrefixKeyMap.entrySet()) {
                 if (mapperClassString.startsWith(entry.getKey())) {
-                    key = entry.getValue();
-                    // 缓存到映射
-                    classKeyMap.put(classOfT, entry.getValue());
+                    ClassPrefixMatcher tempMatcher = new ClassPrefixMatcher(entry.getKey());
+                    if (tempMatcher.matchThan(classPrefixMatcher)) {
+                        classPrefixMatcher = tempMatcher;
+                        key = entry.getValue();
+                        // 缓存到映射
+                        classKeyMap.put(classOfT, entry.getValue());
+                    }
                 }
             }
         }
@@ -106,6 +112,47 @@ public class ClassPrefixMultiDataSourceInterceptor extends AbstractMultiDataSour
     @Override
     public void setProperties(Properties properties) {
 
+    }
+
+    /**
+     * 类前缀比较类
+     */
+    private class ClassPrefixMatcher {
+        /**
+         * ClassName点数
+         */
+        private int dotsOfClassName;
+
+        /**
+         * ClassName长度数
+         */
+        private int lengthOfCalssName;
+
+        public ClassPrefixMatcher(String className) {
+            this.dotsOfClassName = StringUtils.countMatches(className, ".");
+            this.lengthOfCalssName = className.length();
+        }
+
+        public ClassPrefixMatcher(int dotsOfClassName, int lengthOfCalssName) {
+            this.dotsOfClassName = dotsOfClassName;
+            this.lengthOfCalssName = lengthOfCalssName;
+        }
+
+        /*
+         * 比较两个Matcher
+         */
+        public boolean matchThan(ClassPrefixMatcher matcher) {
+            if (matcher == null) {
+                return true;
+            }
+            if (this.dotsOfClassName > matcher.dotsOfClassName) {
+                return true;
+            }
+            if (this.lengthOfCalssName > matcher.lengthOfCalssName) {
+                return true;
+            }
+            return false;
+        }
     }
 
 }
