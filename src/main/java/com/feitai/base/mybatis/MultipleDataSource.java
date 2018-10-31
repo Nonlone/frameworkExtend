@@ -1,6 +1,7 @@
 package com.feitai.base.mybatis;
 
 import com.feitai.utils.ObjectUtils;
+import lombok.Getter;
 import org.springframework.jdbc.datasource.lookup.AbstractRoutingDataSource;
 
 import javax.sql.DataSource;
@@ -15,7 +16,9 @@ public class MultipleDataSource extends AbstractRoutingDataSource {
 
     private static final ThreadLocal<String> dataSourceKey = new InheritableThreadLocal<String>();
 
-    private static final Set<String> dataSourceKeySet = new HashSet<String>();
+    @Getter
+    private final Set<String> dataSourceKeySet = new HashSet<String>();
+
 
     public MultipleDataSource(Map<Object, Object> targetDataSources, DataSource defaultDataSource) {
         setTargetDataSources(targetDataSources);
@@ -48,6 +51,7 @@ public class MultipleDataSource extends AbstractRoutingDataSource {
 
     /**
      * 获取数据源
+     *
      * @param key
      * @return
      */

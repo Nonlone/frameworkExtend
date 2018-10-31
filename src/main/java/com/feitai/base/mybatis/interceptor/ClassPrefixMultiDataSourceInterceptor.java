@@ -12,6 +12,7 @@ import java.sql.Connection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * MyBatis 自动分配数据库连接插件，需要注入多数据池数据源
@@ -30,8 +31,8 @@ public class ClassPrefixMultiDataSourceInterceptor extends AbstractMultiDataSour
 
     private Map<Class<?>, String> classKeyMap = new HashMap<>();
 
-    public ClassPrefixMultiDataSourceInterceptor(MultipleDataSource multipleDataSource, Map<String, String> classPrefixKeyMap) {
-        super(multipleDataSource);
+    public ClassPrefixMultiDataSourceInterceptor(MultipleDataSource multipleDataSource, ConcurrentHashMap<String, ConnectionSignature> connectionSignatureMap, Map<String, String> classPrefixKeyMap) {
+        super(multipleDataSource, connectionSignatureMap);
         this.classPrefixKeyMap = classPrefixKeyMap;
     }
 
@@ -61,7 +62,7 @@ public class ClassPrefixMultiDataSourceInterceptor extends AbstractMultiDataSour
         }
         String key = getKey(mapperClass);
         // 替换数据源
-        if (StringUtils.isNotBlank(key) && !key.equals(multipleDataSource.getDataSourceKey())) {
+        if (StringUtils.isNotBlank(key)) {
             setConnection(invocation, key);
         }
         Object result = invocation.proceed();

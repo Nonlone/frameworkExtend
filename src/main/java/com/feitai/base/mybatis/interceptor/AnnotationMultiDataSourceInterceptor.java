@@ -12,6 +12,7 @@ import org.apache.ibatis.plugin.Signature;
 
 import java.sql.Connection;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * MyBatis 自动分配数据库连接插件，需要注入多数据池数据源
@@ -23,8 +24,8 @@ import java.util.Properties;
 })
 public class AnnotationMultiDataSourceInterceptor extends AbstractMultiDataSourceInterceptor {
 
-    public AnnotationMultiDataSourceInterceptor(MultipleDataSource multipleDataSource) {
-        super(multipleDataSource);
+    public AnnotationMultiDataSourceInterceptor(MultipleDataSource multipleDataSource, ConcurrentHashMap<String, ConnectionSignature> connectionSignatureMap) {
+        super(multipleDataSource, connectionSignatureMap);
     }
 
     @Override
@@ -35,7 +36,7 @@ public class AnnotationMultiDataSourceInterceptor extends AbstractMultiDataSourc
             return result;
         }
         Class<?> mapperClass = getMapperClass(invocation);
-        if(mapperClass==null){
+        if (mapperClass == null) {
             log.warn("op<intercept> mapperClass is null");
             Object result = invocation.proceed();
             return result;
@@ -58,7 +59,7 @@ public class AnnotationMultiDataSourceInterceptor extends AbstractMultiDataSourc
             }
         }
         Object result = invocation.proceed();
-        if(log.isDebugEnabled()) {
+        if (log.isDebugEnabled()) {
             log.debug("op<intercept> after Invocation.proceed()");
         }
         return result;

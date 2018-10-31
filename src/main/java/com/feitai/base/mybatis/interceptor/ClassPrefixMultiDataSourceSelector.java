@@ -36,5 +36,19 @@ public class ClassPrefixMultiDataSourceSelector {
         return null;
     }
 
+    /**
+     * 获取指定类数据源
+     *
+     * @param classOfT
+     * @return
+     */
+    public String getDataSourceKey(Class<?> classOfT) {
+        String key = classPrefixMultiDataSourceInterceptor.getKey(classOfT);
+        if (StringUtils.isNotBlank(key) && multipleDataSource.hasDataSourceKey(key)) {
+            return key;
+        }
+        return null;
+    }
+
 
 }

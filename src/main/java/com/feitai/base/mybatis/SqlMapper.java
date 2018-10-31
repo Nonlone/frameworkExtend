@@ -27,26 +27,9 @@ import java.util.Map;
  * @since 2015-03-10
  */
 public class SqlMapper {
+
     private final MSUtils msUtils;
     private final SqlSession sqlSession;
-
-
-    /**
-     * 构造方法，主动传入数据源
-     *
-     * @param sqlSession
-     */
-    public SqlMapper(SqlSession sqlSession, DataSource dataSource, DatabaseIdProvider databaseIdProvider) throws SQLException {
-        Configuration configuration = sqlSession.getConfiguration();
-        Environment environment = configuration.getEnvironment();
-        String dataBaseId = databaseIdProvider.getDatabaseId(dataSource);
-        environment = new Environment(dataBaseId, environment.getTransactionFactory(), dataSource);
-        configuration.setDatabaseId(dataBaseId);
-        configuration.setEnvironment(environment);
-        this.sqlSession = sqlSession;
-        this.msUtils = new MSUtils(sqlSession.getConfiguration());
-    }
-
 
     /**
      * 构造方法，默认缓存MappedStatement
