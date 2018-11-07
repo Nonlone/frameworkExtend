@@ -31,6 +31,14 @@ public class SqlMapper {
     private final MSUtils msUtils;
     private final SqlSession sqlSession;
 
+
+    /***
+     * 清楚1级缓存
+     */
+    public void clearCache(){
+        this.sqlSession.clearCache();
+    }
+
     /**
      * 构造方法，默认缓存MappedStatement
      *
