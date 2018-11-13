@@ -46,18 +46,19 @@ public abstract class BaseMqListenter<T> implements ChannelAwareMessageListener 
         if (log.isDebugEnabled()) {
             log.debug(String.format("class<%s> >>  getMessageBody message<%s>", classOfT.getName(), acceptableMessageBody));
         }
-        T t = parseBody(acceptableMessageBody, classOfT);
-        if (log.isDebugEnabled()) {
-            log.debug(String.format("class<%s> >>  parseBody message<%s>", classOfT.getName(), JSON.toJSONString(t)));
-        }
-        if (t != null && (needJSRValidation(message) || needJSRValidation(t))) {
-            //进行JSR校验
-            Set<ConstraintViolation<T>> validateResultSet = ValidateUtils.validate(t);
-            if (!CollectionUtils.isEmpty(validateResultSet)) {
-                throw new ValidationException(classOfT, ValidateUtils.validateResultToString(validateResultSet));
-            }
-        }
+        T t = null;
         try {
+            t = parseBody(acceptableMessageBody, classOfT);
+            if (log.isDebugEnabled()) {
+                log.debug(String.format("class<%s> >>  parseBody message<%s>", classOfT.getName(), JSON.toJSONString(t)));
+            }
+            if (t != null && (needJSRValidation(message) || needJSRValidation(t))) {
+                //进行JSR校验
+                Set<ConstraintViolation<T>> validateResultSet = ValidateUtils.validate(t);
+                if (!CollectionUtils.isEmpty(validateResultSet)) {
+                    throw new ValidationException(classOfT, ValidateUtils.validateResultToString(validateResultSet));
+                }
+            }
             onHandleMessage(t);
         } catch (Exception e) {
             log.error(String.format("onHandlerMessage error classOfT<%s> bean<%s>", classOfT.getName(), JSON.toJSONString(t)), e);
