@@ -3,14 +3,18 @@ package com.feitai.base.configuration;
 import com.feitai.base.mq.RabbitMqListener;
 import com.feitai.utils.StringUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.SmartInitializingSingleton;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.util.CollectionUtils;
 
@@ -73,6 +77,34 @@ public class AmqpConfiguration implements SmartInitializingSingleton, Applicatio
                 simpleMessageListenerContainer.start();
             }
         }
+    }
+
+    @Bean
+    public AmqpTemplate amqpTemplate() {
+        ConnectionFactory connectionFactory = applicationContext.getBean(ConnectionFactory.class);
+        RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory);
+        rabbitTemplate.setEncoding("UTF-8");
+        // 消息发送失败返回到队列中，yml需要配置 publisher-returns: true
+        rabbitTemplate.setMandatory(true);
+        rabbitTemplate.setReturnCallback((message, replyCode, replyText, exchange, routingKey) -> {
+            String correlationId = message.getMessageProperties().getCorrelationIdString();
+            if(log.isDebugEnabled()) {
+                log.debug("amqp send fail message<{}> replyCode<{}> reason<{}> exchange<{}>  routeKey<{}>", correlationId, replyCode, replyText, exchange, routingKey);
+            }
+        });
+        // 消息确认，yml需要配置 publisher-confirms: true
+        rabbitTemplate.setConfirmCallback((correlationData, ack, cause) -> {
+            if (ack) {
+                if(log.isDebugEnabled()) {
+                    log.debug("amqp send success id<{}>", correlationData.getId());
+                }
+            } else {
+                if(log.isDebugEnabled()) {
+                    log.debug("amqp send fail reason<{}>", cause);
+                }
+            }
+        });
+        return rabbitTemplate;
     }
 
     @Override

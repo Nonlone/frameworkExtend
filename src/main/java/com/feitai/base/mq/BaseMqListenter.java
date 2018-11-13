@@ -33,6 +33,10 @@ public abstract class BaseMqListenter<T> implements ChannelAwareMessageListener 
         log.info("{} mq listenter started!", classOfT.getName());
     }
 
+    /**
+     * 是否需要JSR校验 默认false
+     */
+    protected boolean needJSRValidation = false;
 
     /**
      * 包裹消费
@@ -52,7 +56,7 @@ public abstract class BaseMqListenter<T> implements ChannelAwareMessageListener 
             if (log.isDebugEnabled()) {
                 log.debug(String.format("class<%s> >>  parseBody message<%s>", classOfT.getName(), JSON.toJSONString(t)));
             }
-            if (t != null && (needJSRValidation(message) || needJSRValidation(t))) {
+            if (t != null && needJSRValidation) {
                 //进行JSR校验
                 Set<ConstraintViolation<T>> validateResultSet = ValidateUtils.validate(t);
                 if (!CollectionUtils.isEmpty(validateResultSet)) {
@@ -92,25 +96,11 @@ public abstract class BaseMqListenter<T> implements ChannelAwareMessageListener 
         return (T) JSON.parseObject(messageBody, classOfT);
     }
 
-
     /**
      * 是否进行JSR校验
-     *
-     * @param message
-     * @return
      */
-    protected boolean needJSRValidation(Message message) {
-        return false;
-    }
-
-    /**
-     * 是否进行JSR校验
-     *
-     * @param t
-     * @return
-     */
-    protected boolean needJSRValidation(T t) {
-        return false;
+    protected void setNeedJSRValidation(boolean tag){
+        needJSRValidation = tag;
     }
 
     /**
