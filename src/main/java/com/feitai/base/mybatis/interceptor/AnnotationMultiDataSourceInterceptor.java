@@ -41,7 +41,7 @@ public class AnnotationMultiDataSourceInterceptor extends AbstractMultiDataSourc
             Object result = invocation.proceed();
             return result;
         }
-        if (mapperClass.isAnnotationPresent(DataSource.class)) {
+        if (!mapperClass.isAnnotationPresent(DataSource.class)) {
             if (log.isDebugEnabled()) {
                 log.warn("op<intercept>  Mapper Class does not has DataSource Annotation ");
             }
@@ -53,7 +53,7 @@ public class AnnotationMultiDataSourceInterceptor extends AbstractMultiDataSourc
         }
         DataSource dataSource = mapperClass.getAnnotation(DataSource.class);
         if (null != dataSource) {
-            String dataSourceKey = dataSource.value().toLowerCase();
+            String dataSourceKey = dataSource.value();//.toLowerCase();
             if (!dataSourceKey.equals(multipleDataSource.getDataSourceKey())) {
                 setConnection(invocation, dataSourceKey);
             }
