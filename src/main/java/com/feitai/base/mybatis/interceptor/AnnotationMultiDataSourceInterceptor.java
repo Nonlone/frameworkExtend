@@ -53,7 +53,7 @@ public class AnnotationMultiDataSourceInterceptor extends AbstractMultiDataSourc
         }
         DataSource dataSource = mapperClass.getAnnotation(DataSource.class);
         if (null != dataSource) {
-            String dataSourceKey = dataSource.value();//.toLowerCase();
+            String dataSourceKey = dataSource.value();
             if (!dataSourceKey.equals(multipleDataSource.getDataSourceKey())) {
                 setConnection(invocation, dataSourceKey);
             }
