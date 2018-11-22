@@ -38,7 +38,7 @@
         <repository>
             <id>feitai-maven</id>
             <name>feitai-maven</name>
-            <url>http://maven.feitai.info/nexus/content/groups/public/</url>
+            <url>http://nexus.feitai.info/repository/maven-public/</url>
             <releases>
                 <enabled>true</enabled>
             </releases>
@@ -51,11 +51,11 @@
     <distributionManagement>
         <repository>
             <id>feitai-release</id>
-            <url>http://maven.feitai.info/nexus/content/repositories/feitai-release/</url>
+            <url>http://nexus.feitai.info/repository/feitai-release/</url>
         </repository>
         <snapshotRepository>
             <id>feitai-snapshot</id>
-            <url>http://maven.feitai.info/nexus/content/repositories/feitai-snapshot/</url>
+            <url>http://nexus.feitai.info/repository/feitai-snapshot/</url>
         </snapshotRepository>
     </distributionManagement>
 
