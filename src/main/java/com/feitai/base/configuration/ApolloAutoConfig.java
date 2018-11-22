@@ -8,7 +8,7 @@ import com.ctrip.framework.apollo.model.ConfigChangeEvent;
 import com.ctrip.framework.apollo.spring.annotation.EnableApolloConfig;
 import com.feitai.base.annotion.ApolloAutoSync;
 import com.feitai.base.annotion.ApolloAutoCallBack;
-import com.feitai.base.annotion.ApolloNotAync;
+import com.feitai.base.annotion.ApolloNotSync;
 import com.feitai.base.apollo.AbstractApolloAutoCallBack;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeansException;
@@ -69,7 +69,7 @@ public class ApolloAutoConfig implements SmartInitializingSingleton, Application
                 for(Field filed:fileds){
                     Value valueMark = filed.getAnnotation(Value.class);
                     //是否指定不刷新
-                    ApolloNotAync notChange = filed.getAnnotation(ApolloNotAync.class);
+                    ApolloNotSync notChange = filed.getAnnotation(ApolloNotSync.class);
                     if(notChange!=null){
                         continue;
                     }
