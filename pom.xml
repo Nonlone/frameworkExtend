@@ -168,8 +168,41 @@
                     <skip>true</skip>
                 </configuration>
             </plugin>
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-release-plugin</artifactId>
+                <version>2.5.3</version>
+                <configuration>
+                    <tagNameFormat>${project.version}</tagNameFormat>
+                    <!--因为是聚合工程，设置这个参数免去为每个子模块设置版本号的动作，统一使用聚合模块的版本号-->
+                    <autoVersionSubmodules>true</autoVersionSubmodules>
+                    <allowTimestampedSnapshots>true</allowTimestampedSnapshots>
+                    <!--git 账号密码-->
+                    <username>linguocheng</username>
+                    <password>Feitai1234</password>
+                    <!--禁用超级pom中的profile文件-->
+                    <useReleaseProfile>true</useReleaseProfile>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
+
+
+    <scm>
+        <!--只读权限的git地址，可以和developerConnection一样，如果权限没有细分的话-->
+        <connection>scm:git:http://git.feitai.info/jieya-server/base.git</connection>
+        <!--具有写权限的git地址-->
+        <url>/git.feitai.info/jieya-server/base</url>
+        <!--项目查看地址-->
+        <developerConnection>scm:git:http://git.feitai.info/jieya-server/base.git</developerConnection>
+    </scm>
 
 
 </project>
