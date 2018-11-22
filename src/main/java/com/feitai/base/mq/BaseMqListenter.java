@@ -3,9 +3,11 @@ package com.feitai.base.mq;
 import com.alibaba.fastjson.JSON;
 import com.feitai.base.exception.ValidationException;
 import com.feitai.utils.ObjectUtils;
+import com.feitai.utils.SnowFlakeIdGenerator;
 import com.feitai.utils.ValidateUtils;
 import com.rabbitmq.client.Channel;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.core.ChannelAwareMessageListener;
 import org.springframework.util.CollectionUtils;
@@ -34,11 +36,6 @@ public abstract class BaseMqListenter<T> implements ChannelAwareMessageListener 
     }
 
     /**
-     * 是否需要JSR校验 默认false
-     */
-    protected boolean needJSRValidation = false;
-
-    /**
      * 包裹消费
      *
      * @param message
@@ -56,17 +53,27 @@ public abstract class BaseMqListenter<T> implements ChannelAwareMessageListener 
             if (log.isDebugEnabled()) {
                 log.debug(String.format("class<%s> >>  parseBody message<%s>", classOfT.getName(), JSON.toJSONString(t)));
             }
-            if (t != null && needJSRValidation) {
+            if (t != null && (needJSRValidation(message) || needJSRValidation(t))) {
                 //进行JSR校验
                 Set<ConstraintViolation<T>> validateResultSet = ValidateUtils.validate(t);
                 if (!CollectionUtils.isEmpty(validateResultSet)) {
                     throw new ValidationException(classOfT, ValidateUtils.validateResultToString(validateResultSet));
                 }
             }
+            try {
+                MDC.put("TRACE_ID", String.valueOf(SnowFlakeIdGenerator.getDefaultNextId()));
+            } catch (IllegalArgumentException e) {
+                log.error(String.format("put traceId error class<%s> deliverTag<%s>", classOfT.getName(), message.getMessageProperties().getDeliveryTag()), e);
+            }
             onHandleMessage(t);
         } catch (Exception e) {
             log.error(String.format("onHandlerMessage error classOfT<%s> bean<%s>", classOfT.getName(), JSON.toJSONString(t)), e);
         } finally {
+            try {
+                MDC.remove("TRACE_ID");
+            } catch (IllegalArgumentException e) {
+                log.error(String.format("remove traceId error class<%s> deliverTag<%s>", classOfT.getName(), message.getMessageProperties().getDeliveryTag()), e);
+            }
             try {
                 channel.basicAck(message.getMessageProperties().getDeliveryTag(), false);
             } catch (IOException ioe) {
@@ -96,11 +103,25 @@ public abstract class BaseMqListenter<T> implements ChannelAwareMessageListener 
         return (T) JSON.parseObject(messageBody, classOfT);
     }
 
+
     /**
      * 是否进行JSR校验
+     *
+     * @param message
+     * @return
      */
-    protected void setNeedJSRValidation(boolean tag){
-        needJSRValidation = tag;
+    protected boolean needJSRValidation(Message message) {
+        return false;
+    }
+
+    /**
+     * 是否进行JSR校验
+     *
+     * @param t
+     * @return
+     */
+    protected boolean needJSRValidation(T t) {
+        return false;
     }
 
     /**

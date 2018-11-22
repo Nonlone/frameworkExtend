@@ -41,7 +41,12 @@ public class AmqpConfiguration implements SmartInitializingSingleton, Applicatio
                 RabbitMqListener rabbitMqListener = clazz.getAnnotation(RabbitMqListener.class);
                 SimpleMessageListenerContainer simpleMessageListenerContainer = new SimpleMessageListenerContainer();
                 simpleMessageListenerContainer.setMessageListener(entry.getValue());
-                simpleMessageListenerContainer.addQueueNames(rabbitMqListener.queue());
+                String queueName = rabbitMqListener.queue();
+                if(queueName.startsWith("${")&&queueName.endsWith("}")){
+                    queueName = queueName.replace("${","").replace("}","");
+                    queueName = applicationContext.getEnvironment().getProperty(queueName);
+                }
+                simpleMessageListenerContainer.addQueueNames(queueName);
                 simpleMessageListenerContainer.setAcknowledgeMode(rabbitMqListener.acknowledgeMode());
                 simpleMessageListenerContainer.setAutoDeclare(true);
                 simpleMessageListenerContainer.setConcurrentConsumers(rabbitMqListener.concurrentConsumer());
@@ -62,15 +67,15 @@ public class AmqpConfiguration implements SmartInitializingSingleton, Applicatio
                 simpleMessageListenerContainer.setRabbitAdmin(rabbitAdmin);
                 // 自动创建队列
                 try {
-                    rabbitAdmin.declareQueue(new Queue(rabbitMqListener.queue(), rabbitMqListener.durable()));
+                    rabbitAdmin.declareQueue(new Queue(queueName, rabbitMqListener.durable()));
                 } catch (RuntimeException re) {
                     log.error(String.format("create queue error queue<%s>", rabbitMqListener.queue()), re);
                     Properties properties = rabbitAdmin.getQueueProperties(rabbitMqListener.queue());
                     int messageCount = Integer.parseInt(properties.get("MESSAGE_COUNT").toString());
                     if (messageCount == 0) {
                         // 删除后重新创建
-                        rabbitAdmin.deleteQueue(rabbitMqListener.queue());
-                        rabbitAdmin.declareQueue(new Queue(rabbitMqListener.queue(), rabbitMqListener.durable()));
+                        rabbitAdmin.deleteQueue(queueName);
+                        rabbitAdmin.declareQueue(new Queue(queueName, rabbitMqListener.durable()));
                     }
                 }
                 // 启动监听器
