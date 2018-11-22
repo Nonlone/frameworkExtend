@@ -5,7 +5,7 @@ package com.feitai.base.apollo;
  * @Author: humin
  * @Date: 2018/11/22 11:15
  */
-public abstract class AbstractApolloChangeCallBack {
+public abstract class AbstractApolloAutoCallBack {
 
     /**
      * 类对应的nameSpace变更回调

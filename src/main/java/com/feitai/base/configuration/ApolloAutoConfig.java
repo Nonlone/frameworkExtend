@@ -6,10 +6,10 @@ import com.ctrip.framework.apollo.ConfigService;
 import com.ctrip.framework.apollo.model.ConfigChange;
 import com.ctrip.framework.apollo.model.ConfigChangeEvent;
 import com.ctrip.framework.apollo.spring.annotation.EnableApolloConfig;
-import com.feitai.base.annotion.ApolloAutoChange;
-import com.feitai.base.annotion.ApolloAutoChangeCallBack;
-import com.feitai.base.annotion.ApolloNotChange;
-import com.feitai.base.apollo.AbstractApolloChangeCallBack;
+import com.feitai.base.annotion.ApolloAutoSync;
+import com.feitai.base.annotion.ApolloAutoCallBack;
+import com.feitai.base.annotion.ApolloNotAync;
+import com.feitai.base.apollo.AbstractApolloAutoCallBack;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.SmartInitializingSingleton;
@@ -31,13 +31,13 @@ import java.util.Objects;
  */
 @Slf4j
 @Configuration
-public class ApolloAutoChangeConfig implements SmartInitializingSingleton, ApplicationContextAware {
+public class ApolloAutoConfig implements SmartInitializingSingleton, ApplicationContextAware {
 
     private ApplicationContext applicationContext;
 
     @Override
     public void afterSingletonsInstantiated() {
-        Map<String, Object> apolloAutoChangeMap = applicationContext.getBeansWithAnnotation(ApolloAutoChange.class);
+        Map<String, Object> apolloAutoChangeMap = applicationContext.getBeansWithAnnotation(ApolloAutoSync.class);
         if (!CollectionUtils.isEmpty(apolloAutoChangeMap)) {
 
             //按 namespace -> 类集合 -> 元素属性集合 划分
@@ -69,7 +69,7 @@ public class ApolloAutoChangeConfig implements SmartInitializingSingleton, Appli
                 for(Field filed:fileds){
                     Value valueMark = filed.getAnnotation(Value.class);
                     //是否指定不刷新
-                    ApolloNotChange notChange = filed.getAnnotation(ApolloNotChange.class);
+                    ApolloNotAync notChange = filed.getAnnotation(ApolloNotAync.class);
                     if(notChange!=null){
                         continue;
                     }
@@ -119,38 +119,38 @@ public class ApolloAutoChangeConfig implements SmartInitializingSingleton, Appli
                                             Field filed =  fieldMap.get(key);
                                             filed.setAccessible(true);
                                             filed.set(obj, change.getNewValue());
-                                            log.info("[ApolloAutoChange] NameSpace:[{}] Key:[{}] OldVal:[{}] To NewVal:{} Success",nameSpace,key,change.getOldValue(),change.getNewValue());
+                                            log.info("[ApolloAuto] NameSpace:[{}] Key:[{}] OldVal:[{}] To NewVal:{} Success",nameSpace,key,change.getOldValue(),change.getNewValue());
 
-                                            ApolloAutoChangeCallBack callBack = filed.getAnnotation(ApolloAutoChangeCallBack.class);
+                                            ApolloAutoCallBack callBack = filed.getAnnotation(ApolloAutoCallBack.class);
                                             if(callBack!=null){
                                                 Class<?> callBackClazz = callBack.callBack();
-                                                AbstractApolloChangeCallBack apolloChangeCallBack = getCallBackService(callBackClazz);
-                                                if(apolloChangeCallBack!=null){
+                                                AbstractApolloAutoCallBack apollCallBack = getCallBackService(callBackClazz);
+                                                if(apollCallBack!=null){
                                                     try {
-                                                        apolloChangeCallBack.callBack(nameSpace,key,change.getOldValue(),change.getNewValue());
+                                                        apollCallBack.callBack(nameSpace,key,change.getOldValue(),change.getNewValue());
                                                     } catch (Exception e) {
-                                                        log.error("[ApolloAutoChange] NameSpace:[{}] Key:[{}] Change Call Back Has Error",nameSpace,key,e);
+                                                        log.error("[ApolloAuto] NameSpace:[{}] Key:[{}] Change Call Back Has Error",nameSpace,key,e);
                                                     }
                                                 }
                                             }
 
                                         } catch (IllegalAccessException e) {
-                                            log.error("[ApolloAutoChange] NameSpace:[{}] Key:[{}] Has Error",nameSpace,key,e);
+                                            log.error("[ApolloAuto] NameSpace:[{}] Key:[{}] Has Error",nameSpace,key,e);
                                         }
                                     }
                                 }
                             }
 
                             //后处理类上的回调函数
-                            ApolloAutoChangeCallBack callBack = obj.getClass().getAnnotation(ApolloAutoChangeCallBack.class);
+                            ApolloAutoCallBack callBack = obj.getClass().getAnnotation(ApolloAutoCallBack.class);
                             if(callBack!=null){
                                 Class<?> callBackClazz = callBack.callBack();
-                                AbstractApolloChangeCallBack apolloChangeCallBack = getCallBackService(callBackClazz);
-                                if(apolloChangeCallBack!=null){
+                                AbstractApolloAutoCallBack apollCallBack = getCallBackService(callBackClazz);
+                                if(apollCallBack!=null){
                                     try {
-                                        apolloChangeCallBack.callBack(nameSpace);
+                                        apollCallBack.callBack(nameSpace);
                                     } catch (Exception e) {
-                                        log.error("[ApolloAutoChange] NameSpace:[{}] Change Call Back Has Error",nameSpace,e);
+                                        log.error("[ApolloAuto] NameSpace:[{}] Change Call Back Has Error",nameSpace,e);
                                     }
                                 }
                             }
@@ -166,17 +166,17 @@ public class ApolloAutoChangeConfig implements SmartInitializingSingleton, Appli
      * @param callBackClazz
      * @return
      */
-    private AbstractApolloChangeCallBack getCallBackService(Class<?> callBackClazz){
-        AbstractApolloChangeCallBack apolloChangeCallBack = null;
+    private AbstractApolloAutoCallBack getCallBackService(Class<?> callBackClazz){
+        AbstractApolloAutoCallBack apolloChangeCallBack = null;
         if(callBackClazz!=null){
             try {
                 if(!Objects.equals(callBackClazz.getSimpleName(),"Null")){
-                    if(Objects.equals(callBackClazz.getSuperclass().getSimpleName(),AbstractApolloChangeCallBack.class.getSimpleName())){
-                        apolloChangeCallBack = (AbstractApolloChangeCallBack) applicationContext.getBean(callBackClazz);
+                    if(Objects.equals(callBackClazz.getSuperclass().getSimpleName(),AbstractApolloAutoCallBack.class.getSimpleName())){
+                        apolloChangeCallBack = (AbstractApolloAutoCallBack) applicationContext.getBean(callBackClazz);
                     }
                 }
             } catch (Exception e) {
-                log.error("[ApolloAutoChange] Get CallBack Service[{}] Has Error",callBackClazz.getSimpleName(),e);
+                log.error("[ApolloAuto] Get CallBack Service[{}] Has Error",callBackClazz.getSimpleName(),e);
             }
         }
         return apolloChangeCallBack;
