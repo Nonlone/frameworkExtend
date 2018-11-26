@@ -170,10 +170,8 @@ public class ApolloAutoConfig implements SmartInitializingSingleton, Application
         AbstractApolloAutoCallBack apolloChangeCallBack = null;
         if(callBackClazz!=null){
             try {
-                if(!Objects.equals(callBackClazz.getSimpleName(),"Null")){
-                    if(Objects.equals(callBackClazz.getSuperclass().getSimpleName(),AbstractApolloAutoCallBack.class.getSimpleName())){
-                        apolloChangeCallBack = (AbstractApolloAutoCallBack) applicationContext.getBean(callBackClazz);
-                    }
+                if(Objects.equals(callBackClazz.getSuperclass().getSimpleName(),AbstractApolloAutoCallBack.class.getSimpleName())){
+                    apolloChangeCallBack = (AbstractApolloAutoCallBack) applicationContext.getBean(callBackClazz);
                 }
             } catch (Exception e) {
                 log.error("[ApolloAuto] Get CallBack Service[{}] Has Error",callBackClazz.getSimpleName(),e);
