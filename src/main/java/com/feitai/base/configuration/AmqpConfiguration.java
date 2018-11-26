@@ -64,7 +64,18 @@ public class AmqpConfiguration implements SmartInitializingSingleton, Applicatio
                     // 封入默认RabbitAdmin
                     rabbitAdmin = applicationContext.getBean(RabbitAdmin.class);
                 }
+
                 simpleMessageListenerContainer.setRabbitAdmin(rabbitAdmin);
+                try {
+                    //初始化之前,先清空已有的队列
+                    String[] queueNames = simpleMessageListenerContainer.getQueueNames();
+                    if(queueNames!=null&&queueNames.length>0){
+                        simpleMessageListenerContainer.removeQueueNames(queueNames);
+                    }
+                } catch (Exception e) {
+                    log.error("clear history queue[{}] has error!",e);
+                }
+
                 // 自动创建队列
                 try {
                     rabbitAdmin.declareQueue(new Queue(queueName, rabbitMqListener.durable()));

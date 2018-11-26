@@ -1,6 +1,6 @@
 package com.feitai.base.annotion;
 
-import com.feitai.base.configuration.JsonJsrValidationInit;
+import com.feitai.base.configuration.JsonJsrValidationConfig;
 import javax.validation.Constraint;
 import javax.validation.Payload;
 import java.lang.annotation.*;
@@ -11,7 +11,7 @@ import java.lang.annotation.*;
  * 需要fastjson支持
  * 适用于元素属性
  */
-@Constraint(validatedBy = JsonJsrValidationInit.class) //具体的实现
+@Constraint(validatedBy = JsonJsrValidationConfig.class) //具体的实现
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target(value = {ElementType.FIELD})

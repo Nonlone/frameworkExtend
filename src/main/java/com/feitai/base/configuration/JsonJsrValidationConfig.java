@@ -20,7 +20,7 @@ import java.util.Objects;
  */
 @Slf4j
 @Component
-public class JsonJsrValidationInit implements ConstraintValidator<JsonJsrValidation, JSONObject> {
+public class JsonJsrValidationConfig implements ConstraintValidator<JsonJsrValidation, JSONObject> {
 
     private String[] jsonPath;
 
