@@ -35,9 +35,8 @@ public class AutoBeanIntecepter implements Interceptor {
         if (log.isDebugEnabled()) {
             log.debug("AutoBeanIntecepter intercept before Invocation.proceed()");
         }
-        RoutingStatementHandler handler = (RoutingStatementHandler) invocation.getTarget();
-        StatementHandler delegate = (StatementHandler) ObjectUtils.getFieldValue(handler, "delegate");
-        BoundSql boundSql = delegate.getBoundSql();
+        StatementHandler handler = (StatementHandler) invocation.getTarget();    
+        BoundSql boundSql = handler.getBoundSql();
         Object object = boundSql.getParameterObject();
         Class<?> constrainClass = autoBeanHandler.getAutoBeanConstraintClass();
         if (constrainClass != null && constrainClass.isInstance(object)) {
