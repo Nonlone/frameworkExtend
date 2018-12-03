@@ -1,10 +1,8 @@
 package com.feitai.base.mybatis.interceptor;
 
 import com.feitai.base.mybatis.annotation.AutoBeanHandler;
-import com.feitai.utils.ObjectUtils;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.ibatis.executor.statement.RoutingStatementHandler;
 import org.apache.ibatis.executor.statement.StatementHandler;
 import org.apache.ibatis.mapping.BoundSql;
 import org.apache.ibatis.plugin.*;
@@ -35,7 +33,7 @@ public class AutoBeanIntecepter extends BaseInterceptor implements Interceptor {
         if (log.isDebugEnabled()) {
             log.debug("AutoBeanIntecepter intercept before Invocation.proceed()");
         }
-        StatementHandler handler = getStatementHandler(invocation);
+        StatementHandler handler = getStatementHandlerFromStatementHandler(invocation);
         BoundSql boundSql = handler.getBoundSql();
         Object object = boundSql.getParameterObject();
         Class<?> constrainClass = autoBeanHandler.getAutoBeanConstraintClass();

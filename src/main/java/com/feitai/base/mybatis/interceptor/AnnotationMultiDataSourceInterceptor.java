@@ -40,7 +40,7 @@ public class AnnotationMultiDataSourceInterceptor extends AbstractMultiDataSourc
             Object result = invocation.proceed();
             return result;
         }
-        Class<?> mapperClass = getMapperClass(invocation);
+        Class<?> mapperClass = getMapperClassFromExecutor(invocation);
         if (mapperClass == null) {
             log.warn("op<intercept> mapperClass is null");
             Object result = invocation.proceed();

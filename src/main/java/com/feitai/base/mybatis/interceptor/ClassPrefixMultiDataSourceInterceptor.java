@@ -54,7 +54,7 @@ public class ClassPrefixMultiDataSourceInterceptor extends AbstractMultiDataSour
         if (log.isDebugEnabled()) {
             log.debug("op<intercept> before Invocation.proceed()");
         }
-        Class<?> mapperClass = getMapperClass(invocation);
+        Class<?> mapperClass = getMapperClassFromExecutor(invocation);
         if (mapperClass == null) {
             log.warn("op<intercept> mapperClass is null");
             Object result = invocation.proceed();
