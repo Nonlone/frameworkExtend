@@ -17,7 +17,7 @@ import java.util.Properties;
 @Intercepts({
         @Signature(type = StatementHandler.class, method = "prepare", args = {Connection.class, Integer.class})
 })
-public class AutoBeanIntecepter implements Interceptor {
+public class AutoBeanIntecepter extends BaseInterceptor implements Interceptor {
 
     private AutoBeanHandler autoBeanHandler;
 
@@ -35,7 +35,7 @@ public class AutoBeanIntecepter implements Interceptor {
         if (log.isDebugEnabled()) {
             log.debug("AutoBeanIntecepter intercept before Invocation.proceed()");
         }
-        StatementHandler handler = (StatementHandler) invocation.getTarget();    
+        StatementHandler handler = getStatementHandler(invocation);
         BoundSql boundSql = handler.getBoundSql();
         Object object = boundSql.getParameterObject();
         Class<?> constrainClass = autoBeanHandler.getAutoBeanConstraintClass();

@@ -5,8 +5,14 @@ import com.feitai.base.mybatis.SqlMapper;
 import com.feitai.utils.StringUtils;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.ibatis.cache.CacheKey;
+import org.apache.ibatis.executor.Executor;
 import org.apache.ibatis.executor.statement.StatementHandler;
+import org.apache.ibatis.mapping.BoundSql;
+import org.apache.ibatis.mapping.MappedStatement;
 import org.apache.ibatis.plugin.*;
+import org.apache.ibatis.session.ResultHandler;
+import org.apache.ibatis.session.RowBounds;
 
 import java.sql.Connection;
 import java.util.HashMap;
@@ -19,8 +25,9 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @Slf4j
 @Data
-@Intercepts({
-        @Signature(type = StatementHandler.class, method = "prepare", args = {Connection.class, Integer.class})
+@Intercepts({@Signature(type = Executor.class, method = "update", args = {MappedStatement.class, Object.class}),
+        @Signature(type = Executor.class, method = "query", args = {MappedStatement.class, Object.class, RowBounds.class, ResultHandler.class}),
+        @Signature(type = Executor.class, method = "query", args = {MappedStatement.class, Object.class,RowBounds.class,ResultHandler.class, CacheKey.class, BoundSql.class})
 })
 public class ClassPrefixMultiDataSourceInterceptor extends AbstractMultiDataSourceInterceptor {
 
@@ -63,7 +70,7 @@ public class ClassPrefixMultiDataSourceInterceptor extends AbstractMultiDataSour
         String key = getKey(mapperClass);
         // 替换数据源
         if (StringUtils.isNotBlank(key)) {
-            setConnection(invocation, key);
+            multipleDataSource.setDataSourceKey(key);
         }
         Object result = invocation.proceed();
         if (log.isDebugEnabled()) {

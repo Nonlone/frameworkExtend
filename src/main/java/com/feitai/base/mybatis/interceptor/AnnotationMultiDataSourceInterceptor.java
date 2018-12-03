@@ -4,13 +4,17 @@ import com.feitai.base.mybatis.MultipleDataSource;
 import com.feitai.base.mybatis.annotation.DataSource;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.ibatis.executor.statement.StatementHandler;
+import org.apache.ibatis.cache.CacheKey;
+import org.apache.ibatis.executor.Executor;
+import org.apache.ibatis.mapping.BoundSql;
+import org.apache.ibatis.mapping.MappedStatement;
 import org.apache.ibatis.plugin.Intercepts;
 import org.apache.ibatis.plugin.Invocation;
 import org.apache.ibatis.plugin.Plugin;
 import org.apache.ibatis.plugin.Signature;
+import org.apache.ibatis.session.ResultHandler;
+import org.apache.ibatis.session.RowBounds;
 
-import java.sql.Connection;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -19,8 +23,9 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @Slf4j
 @Data
-@Intercepts({
-        @Signature(type = StatementHandler.class, method = "prepare", args = {Connection.class, Integer.class})
+@Intercepts({@Signature(type = Executor.class, method = "update", args = {MappedStatement.class, Object.class}),
+        @Signature(type = Executor.class, method = "query", args = {MappedStatement.class, Object.class, RowBounds.class, ResultHandler.class}),
+        @Signature(type = Executor.class, method = "query", args = {MappedStatement.class, Object.class,RowBounds.class,ResultHandler.class, CacheKey.class, BoundSql.class})
 })
 public class AnnotationMultiDataSourceInterceptor extends AbstractMultiDataSourceInterceptor {
 
@@ -55,7 +60,8 @@ public class AnnotationMultiDataSourceInterceptor extends AbstractMultiDataSourc
         if (null != dataSource) {
             String dataSourceKey = dataSource.value();
             if (!dataSourceKey.equals(multipleDataSource.getDataSourceKey())) {
-                setConnection(invocation, dataSourceKey);
+                multipleDataSource.setDataSourceKey(dataSourceKey);
+
             }
         }
         Object result = invocation.proceed();

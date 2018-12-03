@@ -19,7 +19,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * Mybatis 多数据源抽象拦截器
  */
 @Slf4j
-public abstract class AbstractMultiDataSourceInterceptor implements Interceptor {
+public abstract class AbstractMultiDataSourceInterceptor extends BaseInterceptor implements Interceptor {
 
 
     @Getter
@@ -41,11 +41,8 @@ public abstract class AbstractMultiDataSourceInterceptor implements Interceptor 
      * @throws ClassNotFoundException
      */
     protected Class<?> getMapperClass(Invocation invocation) {
-        Object target = invocation.getTarget();
-        if (target instanceof RoutingStatementHandler) {
-            RoutingStatementHandler handler = (RoutingStatementHandler) invocation.getTarget();
-            StatementHandler delegate = (StatementHandler) ObjectUtils.getFieldValue(handler, "delegate");
-            MappedStatement mappedStatement = (MappedStatement) ObjectUtils.getFieldValue(delegate, "mappedStatement");
+        MappedStatement mappedStatement = getMappedStatement(invocation);
+        if(Objects.nonNull(mappedStatement)){
             String mapperClassPath = mappedStatement.getId().substring(0, mappedStatement.getId().lastIndexOf("."));
             try {
                 Class<?> mapperClass = Class.forName(mapperClassPath);
