@@ -40,7 +40,7 @@ public abstract class AbstractMultiDataSourceInterceptor extends BaseInterceptor
      * @return
      * @throws ClassNotFoundException
      */
-    protected Class<?> getMapperClass(Invocation invocation) {
+    protected Class<?> getMapperClassFromExecutor(Invocation invocation) {
         MappedStatement mappedStatement =(MappedStatement) invocation.getArgs()[0];
         if(Objects.nonNull(mappedStatement)){
             String mapperClassPath = mappedStatement.getId().substring(0, mappedStatement.getId().lastIndexOf("."));
