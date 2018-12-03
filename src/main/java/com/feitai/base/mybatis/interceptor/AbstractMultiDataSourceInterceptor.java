@@ -33,26 +33,7 @@ public abstract class AbstractMultiDataSourceInterceptor extends BaseInterceptor
         this.connectionSignatureMap = connectionSignatureMap;
     }
 
-    /**
-     * 获取Mapper Class
-     *
-     * @param invocation
-     * @return
-     * @throws ClassNotFoundException
-     */
-    protected Class<?> getMapperClassFromExecutor(Invocation invocation) {
-        MappedStatement mappedStatement =(MappedStatement) invocation.getArgs()[0];
-        if(Objects.nonNull(mappedStatement)){
-            String mapperClassPath = mappedStatement.getId().substring(0, mappedStatement.getId().lastIndexOf("."));
-            try {
-                Class<?> mapperClass = Class.forName(mapperClassPath);
-                return mapperClass;
-            } catch (ClassNotFoundException cnfe) {
-                log.error(String.format("mappedStatement.Id<%s> mapperClassPath<%s>", mappedStatement.getId(), mapperClassPath), cnfe);
-            }
-        }
-        return null;
-    }
+
 
     /**
      * 设置连接
