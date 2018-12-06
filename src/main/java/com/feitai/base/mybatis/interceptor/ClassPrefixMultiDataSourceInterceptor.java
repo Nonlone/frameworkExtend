@@ -67,16 +67,22 @@ public class ClassPrefixMultiDataSourceInterceptor extends AbstractMultiDataSour
             Object result = invocation.proceed();
             return result;
         }
-        String key = getKey(mapperClass);
-        // 替换数据源
-        if (StringUtils.isNotBlank(key)) {
-            multipleDataSource.setDataSourceKey(key);
-        }
-        Object result = invocation.proceed();
-        if (log.isDebugEnabled()) {
-            log.debug("op<intercept> after Invocation.proceed()");
-        }
-        return result;
+      try{
+	        String key = getKey(mapperClass);
+	        // 替换数据源
+	        if (StringUtils.isNotBlank(key)) {
+	            multipleDataSource.setDataSourceKey(key);
+	        }
+	        Object result = invocation.proceed();
+	        if (log.isDebugEnabled()) {
+	            log.debug("op<intercept> after Invocation.proceed()");
+	        }
+	        return result;
+        }catch(Exception e){
+        	throw e;
+        }finally {
+			multipleDataSource.setDataSourceKey(null);
+		}
     }
 
     /**
