@@ -38,6 +38,7 @@ public class ClassPrefixMultiDataSourceInterceptor extends AbstractMultiDataSour
 
     private Map<Class<?>, String> classKeyMap = new HashMap<>();
 
+
     public ClassPrefixMultiDataSourceInterceptor(MultipleDataSource multipleDataSource, ConcurrentHashMap<String, ConnectionSignature> connectionSignatureMap, Map<String, String> classPrefixKeyMap) {
         super(multipleDataSource, connectionSignatureMap);
         this.classPrefixKeyMap = classPrefixKeyMap;
