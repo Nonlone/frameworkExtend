@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.feitai</groupId>
@@ -11,18 +12,18 @@
     <description>Base Module</description>
 
     <properties>
-        <tag.version>${maven.build.timestamp}</tag.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <java.version>1.8</java.version>
-        <maven.build.timestamp.format>yyyyMMddHHmm</maven.build.timestamp.format>
+        <tag.version>${maven.build.timestamp}</tag.version>
+        <maven.build.timestamp.format>yyyyMMdd-HHmm</maven.build.timestamp.format>
+        <maven.javadoc.skip>true</maven.javadoc.skip>
         <spring-boot.version>2.0.6.RELEASE</spring-boot.version>
         <spring-boot-admin.version>2.0.1</spring-boot-admin.version>
         <lombok.version>1.16.12</lombok.version>
         <tk.mybatis.version>2.0.3</tk.mybatis.version>
         <pagehelper.version>1.2.5</pagehelper.version>
     </properties>
-
 
 
     <repositories>
@@ -49,7 +50,6 @@
             <url>http://nexus.feitai.info/repository/feitai-snapshot/</url>
         </snapshotRepository>
     </distributionManagement>
-
 
 
     <dependencies>
@@ -191,8 +191,7 @@
         <url>/git.feitai.info/jieya-server/base</url>
         <!--项目查看地址-->
         <developerConnection>scm:git:http://git.feitai.info/jieya-server/base.git</developerConnection>
-      <tag>v1.3.201812260756</tag>
-  </scm>
+    </scm>
 
 
 </project>
