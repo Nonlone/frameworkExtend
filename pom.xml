@@ -12,7 +12,7 @@
     <description>Base Module</description>
 
     <properties>
-        <version>1.2</version>
+        <version>1.2.1</version>
         <app.version>${version}-SNAPSHOT</app.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -73,7 +73,7 @@
         <dependency>
             <groupId>com.feitai</groupId>
             <artifactId>utils</artifactId>
-            <version>1.1</version>
+            <version>1.2</version>
         </dependency>
 
         <!-- boot-->
