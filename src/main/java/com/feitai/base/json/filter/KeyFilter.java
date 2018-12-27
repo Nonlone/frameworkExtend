@@ -6,6 +6,7 @@ import com.feitai.utils.ObjectUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.CollectionUtils;
 
+import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -45,12 +46,12 @@ public class KeyFilter implements ValueFilter {
         if (!Map.class.isAssignableFrom(object.getClass())) {
             while (objectClass != Object.class) {
                 try {
-                    ObjectUtils.getField(object,name);
-                    if (object.getClass().getDeclaredField(name).isAnnotationPresent(NoKeyFilter.class)) {
+                    Field field = ObjectUtils.getField(object,name);
+                    if (field.isAnnotationPresent(NoKeyFilter.class)) {
                         checkField = true;
                     }
-                } catch (NoSuchFieldException nsfe) {
-                    log.error(String.format("object field<%s> not exist", name), nsfe);
+                } catch (RuntimeException re) {
+                    log.error(String.format("object field<%s> not exist", name), re);
                 }
                 // 跳到父级
                 objectClass = objectClass.getSuperclass();
