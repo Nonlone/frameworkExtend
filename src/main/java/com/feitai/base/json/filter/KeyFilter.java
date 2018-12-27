@@ -2,6 +2,7 @@ package com.feitai.base.json.filter;
 
 import com.alibaba.fastjson.serializer.ValueFilter;
 import com.feitai.base.annotion.NoKeyFilter;
+import com.feitai.utils.ObjectUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.CollectionUtils;
 
@@ -34,18 +35,30 @@ public class KeyFilter implements ValueFilter {
 
     @Override
     public Object process(Object object, String name, Object value) {
+        Class<?> objectClass = object.getClass();
         // 非处理器处理
-        if (object.getClass().isAnnotationPresent(NoKeyFilter.class)) {
+        if (objectClass.isAnnotationPresent(NoKeyFilter.class)) {
             return value;
         }
-        try {
-            if (!Map.class.isAssignableFrom(object.getClass())
-                    && object.getClass().getField(name).isAnnotationPresent(NoKeyFilter.class)) {
-                // 非Map映射的尝试判断是否在存在成员变量
+        // 检查成员变量
+        boolean checkField = false;
+        if (!Map.class.isAssignableFrom(object.getClass())) {
+            while (objectClass != Object.class) {
+                try {
+                    ObjectUtils.getField(object,name);
+                    if (object.getClass().getDeclaredField(name).isAnnotationPresent(NoKeyFilter.class)) {
+                        checkField = true;
+                    }
+                } catch (NoSuchFieldException nsfe) {
+                    log.error(String.format("object field<%s> not exist", name), nsfe);
+                }
+                // 跳到父级
+                objectClass = objectClass.getSuperclass();
+            }
+            // 非Map映射的尝试判断是否在存在成员变量
+            if(checkField) {
                 return value;
             }
-        } catch (NoSuchFieldException nsfe) {
-            log.error(String.format("object field<%s> not exist", name), nsfe);
         }
         if (!CollectionUtils.isEmpty(regKeyHandlerMap)) {
             for (Map.Entry<String, KeyValueHandler> entry : regKeyHandlerMap.entrySet()) {
