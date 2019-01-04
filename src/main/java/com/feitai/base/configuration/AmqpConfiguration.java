@@ -19,6 +19,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.util.CollectionUtils;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 
 @Slf4j
@@ -34,13 +35,13 @@ public class AmqpConfiguration implements SmartInitializingSingleton, Applicatio
         Map<String, Object> rabbitMqListenerMap = applicationContext.getBeansWithAnnotation(RabbitMqListener.class);
         if (!CollectionUtils.isEmpty(rabbitMqListenerMap)) {
             // 获取listener列表
-            for (Map.Entry<String, Object> entry : rabbitMqListenerMap.entrySet()) {
-                Object listener = entry.getValue();
+            for (String key : rabbitMqListenerMap.keySet()) {
+                Object listener = rabbitMqListenerMap.get(key);
                 Class<?> clazz = listener.getClass();
                 // 获取注解
                 RabbitMqListener rabbitMqListener = clazz.getAnnotation(RabbitMqListener.class);
                 SimpleMessageListenerContainer simpleMessageListenerContainer = new SimpleMessageListenerContainer();
-                simpleMessageListenerContainer.setMessageListener(entry.getValue());
+                simpleMessageListenerContainer.setMessageListener(listener);
                 String queueName = rabbitMqListener.queue();
                 if(queueName.startsWith("${")&&queueName.endsWith("}")){
                     queueName = queueName.replace("${","").replace("}","");
@@ -65,19 +66,24 @@ public class AmqpConfiguration implements SmartInitializingSingleton, Applicatio
                     rabbitAdmin = applicationContext.getBean(RabbitAdmin.class);
                 }
 
-                simpleMessageListenerContainer.setRabbitAdmin(rabbitAdmin);
-                try {
-                    //初始化之前,先清空已有的队列
-                    String[] queueNames = simpleMessageListenerContainer.getQueueNames();
-                    if(queueNames!=null&&queueNames.length>0){
-                        simpleMessageListenerContainer.removeQueueNames(queueNames);
-                    }
-                } catch (Exception e) {
-                    log.error("clear history queue[{}] has error!",e);
-                }
+//                simpleMessageListenerContainer.setRabbitAdmin(rabbitAdmin);
+//                try {
+//                    //初始化之前,先清空已有的队列
+//                    String[] queueNames = simpleMessageListenerContainer.getQueueNames();
+//                    if(queueNames!=null&&queueNames.length>0) {
+//                        for (String oldQueueName : queueNames) {
+//                            if (Objects.equals(oldQueueName, queueName)) {
+//                                simpleMessageListenerContainer.removeQueueNames(queueName);
+//                            }
+//                        }
+//                    }
+//                } catch (Exception e) {
+//                    log.error("clear history queue[{}] has error!",e);
+//                }
 
                 // 自动创建队列
                 try {
+                    simpleMessageListenerContainer.setRabbitAdmin(rabbitAdmin);
                     rabbitAdmin.declareQueue(new Queue(queueName, rabbitMqListener.durable()));
                     log.info("[amqp] init new queue {} success",queueName);
                 } catch (RuntimeException re) {
@@ -92,6 +98,7 @@ public class AmqpConfiguration implements SmartInitializingSingleton, Applicatio
                 }
                 // 启动监听器
                 simpleMessageListenerContainer.start();
+                log.info("[amqp] start queue {}",queueName);
             }
         }
     }
