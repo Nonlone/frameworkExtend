@@ -79,6 +79,7 @@ public class AmqpConfiguration implements SmartInitializingSingleton, Applicatio
                 // 自动创建队列
                 try {
                     rabbitAdmin.declareQueue(new Queue(queueName, rabbitMqListener.durable()));
+                    log.info("[amqp] init new queue {} success",queueName);
                 } catch (RuntimeException re) {
                     log.error(String.format("create queue error queue<%s>", rabbitMqListener.queue()), re);
                     Properties properties = rabbitAdmin.getQueueProperties(rabbitMqListener.queue());
