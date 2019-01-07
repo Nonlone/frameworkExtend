@@ -104,6 +104,7 @@ public class AmqpConfiguration implements SmartInitializingSingleton, Applicatio
                     try {
                         SimpleMessageListenerContainer simpleMessageListenerContainer = allQueueMap.get(queueName);
                         simpleMessageListenerContainer.stop();
+                        log.info("[amqp] remove old queue {} success",queueName);
                         allQueueMap.remove(queueName);
                     } catch (Exception e) {
                         e.printStackTrace();
