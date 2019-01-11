@@ -78,9 +78,11 @@ class MultiDataSourceExecutorInteceptor extends BaseExecutorInterceptor {
                     ConnectionSignature newConnectionSignature = new ConnectionSignature(newConnection);
                     if(!newConnectionSignature.checkEquals(oldConnectionSignature)){
                         // 连接签名不相同，设置数据源
+
                         // 尝试提交事务，然后关闭数据源
                         transaction.commit();
                         transaction.close();
+
                         // 连接签名不相同，设置数据源
                         DataSource newDataSource = myBatisDataSourceSelector.getDataSource(mapperClass,connection);
                         ObjectUtils.setFieldValue(transaction,"dataSource",newDataSource);

@@ -31,12 +31,6 @@ public interface MyBatisDataSourceSelector {
 
 
     /**
-     * 标记事务，用于关闭连接时候尝试判断提交事务
-     */
-    void markTransaction();
-
-
-    /**
      * 关闭连接
      * @return
      */

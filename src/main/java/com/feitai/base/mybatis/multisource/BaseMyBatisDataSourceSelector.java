@@ -32,8 +32,6 @@ public abstract class BaseMyBatisDataSourceSelector implements MyBatisDataSource
 
     protected ThreadLocal<DataSource> dataSourceThreadLocal = new ThreadLocal<>();
 
-    protected ThreadLocal<Boolean> markTransactionThreadLocal = new ThreadLocal<>();
-
 
     protected BaseMyBatisDataSourceSelector(MultipleDataSource multipleDataSource, ConcurrentHashMap<String, ConnectionSignature> connectionSignatureMap) {
         this.multipleDataSource = multipleDataSource;
@@ -58,20 +56,13 @@ public abstract class BaseMyBatisDataSourceSelector implements MyBatisDataSource
         return connection;
     }
 
-    @Override
-    public void markTransaction() {
-        markTransactionThreadLocal.set(true);
-    }
-
-
     /**
      * 关闭连接
      */
     @Override
     public void close() {
         // 判断是否有事务标记
-        if (Optional.ofNullable(markTransactionThreadLocal.get()).orElse(false)
-                && Objects.nonNull(connectionThreadLocal.get())) {
+        if (Objects.nonNull(connectionThreadLocal.get())) {
             // 提交事务
             try {
                 connectionThreadLocal.get().commit();
