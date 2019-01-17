@@ -50,7 +50,7 @@ public class KeyFilter implements ValueFilter {
                         checkField = true;
                     }
                 } catch (NoSuchFieldException nsfe) {
-                    log.error(String.format("object field<%s> not exist", name), nsfe);
+                    // 异常无需处理，遍历到父级寻找字段
                 }
                 // 跳到父级
                 objectClass = objectClass.getSuperclass();
