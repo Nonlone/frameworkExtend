@@ -51,12 +51,13 @@ public class KeyFilter implements ValueFilter {
                     }
                 } catch (NoSuchFieldException nsfe) {
                     // 异常无需处理，遍历到父级寻找字段
+                    log.debug(String.format("object class<%s> field<%s> not exist", object.getClass().getName(), name), nsfe);
                 }
                 // 跳到父级
                 objectClass = objectClass.getSuperclass();
             }
             // 非Map映射的尝试判断是否在存在成员变量
-            if(checkField) {
+            if (checkField) {
                 return value;
             }
         }
