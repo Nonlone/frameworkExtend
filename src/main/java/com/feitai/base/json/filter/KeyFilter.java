@@ -14,6 +14,7 @@ import java.util.regex.Pattern;
 /**
  * Fastjson Key 过滤器
  */
+@Deprecated
 @Slf4j
 public class KeyFilter implements ValueFilter {
 
@@ -45,7 +46,6 @@ public class KeyFilter implements ValueFilter {
         if (!Map.class.isAssignableFrom(object.getClass())) {
             while (objectClass != Object.class) {
                 try {
-                    ObjectUtils.getField(object,name);
                     if (object.getClass().getDeclaredField(name).isAnnotationPresent(NoKeyFilter.class)) {
                         checkField = true;
                     }
