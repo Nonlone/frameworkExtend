@@ -28,5 +28,5 @@ public @interface Log {
 	 * 日志输出的通知位置
 	 * @return
 	 */
-	LogLocation[] logLocation() default {LogLocation.AROUND};
+	LogLocation[] logLocation() default {LogLocation.AROUND,LogLocation.THROWING};
 }
