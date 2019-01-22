@@ -6,8 +6,8 @@ import com.ctrip.framework.apollo.ConfigService;
 import com.ctrip.framework.apollo.model.ConfigChange;
 import com.ctrip.framework.apollo.model.ConfigChangeEvent;
 import com.ctrip.framework.apollo.spring.annotation.EnableApolloConfig;
-import com.feitai.base.annotion.ApolloAutoSync;
 import com.feitai.base.annotion.ApolloAutoCallBack;
+import com.feitai.base.annotion.ApolloAutoSync;
 import com.feitai.base.annotion.ApolloNotSync;
 import com.feitai.base.apollo.AbstractApolloAutoCallBack;
 import lombok.extern.slf4j.Slf4j;
@@ -19,6 +19,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.util.CollectionUtils;
+
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;

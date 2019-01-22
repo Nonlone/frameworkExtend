@@ -1,10 +1,7 @@
 package com.feitai.base.mybatis.interceptor;
 
 import com.feitai.base.mybatis.MultipleDataSource;
-import com.feitai.base.mybatis.interceptor.ClassPrefixMultiDataSourceInterceptor;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 import javax.sql.DataSource;
 

@@ -1,6 +1,5 @@
 package com.feitai.base.annotion;
 
-import javax.validation.constraints.Null;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

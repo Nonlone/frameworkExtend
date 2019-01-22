@@ -7,7 +7,6 @@ import com.feitai.utils.ObjectUtils;
 import com.feitai.utils.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.datasource.DataSourceUtils;
-import tk.mybatis.mapper.common.Mapper;
 
 import java.sql.Connection;
 import java.sql.SQLException;
