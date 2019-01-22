@@ -1,13 +1,8 @@
 package com.feitai.base.annotion;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Inherited;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
 import org.slf4j.event.Level;
+
+import java.lang.annotation.*;
 
 /**
  * 日志输出注解
@@ -20,13 +15,21 @@ import org.slf4j.event.Level;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Log {
 
-	
-	
+	/**
+	 * 记录时间，仅当 LogPoint.AROUND 时候生效
+	 * @return
+	 */
+	boolean isStopWatch() default false;
+
+	/**
+	 * 日志级别
+	 * @return
+	 */
 	Level level() default Level.INFO;
 	
 	/**
 	 * 日志输出的通知位置
 	 * @return
 	 */
-	LogLocation[] logLocation() default {LogLocation.AROUND,LogLocation.THROWING};
+	LogPoint[] logLocation() default {LogPoint.AROUND, LogPoint.THROWING};
 }
