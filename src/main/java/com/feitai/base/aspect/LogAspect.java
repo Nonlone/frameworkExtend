@@ -42,7 +42,7 @@ public class LogAspect {
     }
 
     private boolean isLog(Log logAnnotation, LogPoint logPoint) {
-        for (LogPoint location : logAnnotation.logLocation()) {
+        for (LogPoint location : logAnnotation.logPoint()) {
             if (location.equals(logPoint)) {
                 return true;
             }
