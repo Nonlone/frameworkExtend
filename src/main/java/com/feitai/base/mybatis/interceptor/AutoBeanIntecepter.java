@@ -15,7 +15,7 @@ import java.util.Properties;
 @Intercepts({
         @Signature(type = StatementHandler.class, method = "prepare", args = {Connection.class, Integer.class})
 })
-public class AutoBeanIntecepter extends BaseInterceptor implements Interceptor {
+public class AutoBeanIntecepter extends BaseInterceptor  {
 
     private AutoBeanHandler autoBeanHandler;
 

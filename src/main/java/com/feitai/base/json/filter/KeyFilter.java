@@ -2,11 +2,9 @@ package com.feitai.base.json.filter;
 
 import com.alibaba.fastjson.serializer.ValueFilter;
 import com.feitai.base.annotion.NoKeyFilter;
-import com.feitai.utils.ObjectUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.CollectionUtils;
 
-import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -15,6 +13,7 @@ import java.util.regex.Pattern;
 /**
  * Fastjson Key 过滤器
  */
+@Deprecated
 @Slf4j
 public class KeyFilter implements ValueFilter {
 
@@ -46,18 +45,17 @@ public class KeyFilter implements ValueFilter {
         if (!Map.class.isAssignableFrom(object.getClass())) {
             while (objectClass != Object.class) {
                 try {
-                    Field field = ObjectUtils.getField(object,name);
-                    if (field.isAnnotationPresent(NoKeyFilter.class)) {
+                    if (object.getClass().getDeclaredField(name).isAnnotationPresent(NoKeyFilter.class)) {
                         checkField = true;
                     }
-                } catch (RuntimeException re) {
-                    log.error(String.format("object field<%s> not exist", name), re);
+                } catch (NoSuchFieldException nsfe) {
+                    // 异常无需处理，遍历到父级寻找字段
                 }
                 // 跳到父级
                 objectClass = objectClass.getSuperclass();
             }
             // 非Map映射的尝试判断是否在存在成员变量
-            if(checkField) {
+            if (checkField) {
                 return value;
             }
         }

@@ -61,7 +61,6 @@ public class AnnotationMultiDataSourceInterceptor extends AbstractMultiDataSourc
             String dataSourceKey = dataSource.value();
             if (!dataSourceKey.equals(multipleDataSource.getDataSourceKey())) {
                 multipleDataSource.setDataSourceKey(dataSourceKey);
-
             }
         }
         Object result = invocation.proceed();

@@ -23,6 +23,8 @@ import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @Describe :
@@ -33,6 +35,7 @@ import java.util.Objects;
 @Configuration
 public class ApolloAutoConfig implements SmartInitializingSingleton, ApplicationContextAware {
 
+    private final Pattern p = Pattern.compile("\\$\\{(.+?)\\}") ;
     private ApplicationContext applicationContext;
 
     @Override
@@ -118,8 +121,24 @@ public class ApolloAutoConfig implements SmartInitializingSingleton, Application
                                             ConfigChange change = changeEvent.getChange(key);
                                             Field filed =  fieldMap.get(key);
                                             filed.setAccessible(true);
-                                            filed.set(obj, change.getNewValue());
-                                            log.info("[ApolloAuto] NameSpace:[{}] Key:[{}] OldVal:[{}] To NewVal:{} Success",nameSpace,key,change.getOldValue(),change.getNewValue());
+                                            String newVal = change.getNewValue();
+                                            //如果有${}的继续取值然后替换
+                                            if(newVal.contains("${")&&newVal.contains("}")){
+                                                StringBuffer sb = new StringBuffer() ;
+                                                Matcher m = p.matcher(newVal) ;
+                                                while( m.find() ){
+                                                    String otherKey = m.group() ;
+                                                    otherKey = otherKey.replace("${","").replace("}","");
+                                                    //appollo取对应key的支 如果取不到的还是用项目中正在使用的历史配置
+                                                    String oldVal = applicationContext.getEnvironment().getProperty(otherKey);
+                                                    String replaceVal = config.getProperty(otherKey,oldVal);
+                                                    m.appendReplacement(sb, replaceVal) ;
+                                                }
+                                                m.appendTail(sb) ;
+                                                newVal = sb.toString();
+                                            }
+                                            filed.set(obj, newVal);
+                                            log.info("[ApolloAuto] NameSpace:[{}] Key:[{}] OldVal:[{}] To NewVal:{} Success",nameSpace,key,change.getOldValue(),newVal);
 
                                             ApolloAutoCallBack callBack = filed.getAnnotation(ApolloAutoCallBack.class);
                                             if(callBack!=null){
