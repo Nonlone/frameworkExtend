@@ -4,7 +4,7 @@
 
     <groupId>com.feitai</groupId>
     <artifactId>base</artifactId>
-    <version>1.3.1-SNAPSHOT</version>
+    <version>1.3.1</version>
     <packaging>jar</packaging>
 
     <name>base</name>
@@ -199,7 +199,7 @@
         <url>/git.feitai.info/jieya-server/base</url>
         <!--项目查看地址-->
         <developerConnection>scm:git:http://git.feitai.info/jieya-server/base.git</developerConnection>
-      <tag>HEAD</tag>
+      <tag>v1.3.1.201901280728</tag>
   </scm>
 
 
