@@ -3,6 +3,7 @@ package com.feitai.base.annotion;
 import org.slf4j.event.Level;
 
 import java.lang.annotation.*;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 日志输出注解
@@ -20,6 +21,12 @@ public @interface Log {
 	 * @return
 	 */
 	boolean isStopWatch() default false;
+
+	/**
+	 * 记录时间单位
+	 * @return
+	 */
+	TimeUnit stopWatchUnit() default TimeUnit.SECONDS;
 
 	/**
 	 * 日志级别
