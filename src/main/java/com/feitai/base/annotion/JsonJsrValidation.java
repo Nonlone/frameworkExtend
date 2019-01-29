@@ -1,6 +1,7 @@
 package com.feitai.base.annotion;
 
 import com.feitai.base.configuration.JsonJsrValidationConfig;
+
 import javax.validation.Constraint;
 import javax.validation.Payload;
 import java.lang.annotation.*;

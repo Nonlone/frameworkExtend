@@ -1,7 +1,6 @@
 package com.feitai.base.mybatis.multisource.interceptor;
 
 import com.feitai.base.mybatis.interceptor.BaseExecutorInterceptor;
-import com.feitai.base.mybatis.interceptor.BaseInterceptor;
 import com.feitai.base.mybatis.interceptor.ConnectionSignature;
 import com.feitai.base.mybatis.multisource.MyBatisDataSourceSelector;
 import com.feitai.utils.ObjectUtils;
@@ -15,7 +14,6 @@ import org.apache.ibatis.mapping.BoundSql;
 import org.apache.ibatis.mapping.MappedStatement;
 import org.apache.ibatis.plugin.Intercepts;
 import org.apache.ibatis.plugin.Invocation;
-import org.apache.ibatis.plugin.Plugin;
 import org.apache.ibatis.plugin.Signature;
 import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.RowBounds;
@@ -25,7 +23,6 @@ import org.springframework.jdbc.datasource.DataSourceUtils;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.util.Objects;
-import java.util.Properties;
 
 /**
  * MyBatis 自动分配数据库连接插件，需要注入 Transaction 成员变量，在 Executor close 方法l拦截，用于关闭自定义数据源

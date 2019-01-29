@@ -1,6 +1,5 @@
 package com.feitai.base.mybatis;
 
-import com.feitai.utils.ObjectUtils;
 import com.feitai.utils.digest.MD5Utils;
 import org.apache.ibatis.builder.StaticSqlSource;
 import org.apache.ibatis.exceptions.TooManyResultsException;
@@ -11,8 +10,6 @@ import org.apache.ibatis.session.SqlSession;
 import tk.mybatis.mapper.entity.EntityTable;
 import tk.mybatis.mapper.mapperhelper.EntityHelper;
 
-import javax.sql.DataSource;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;

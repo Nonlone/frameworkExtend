@@ -8,10 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.executor.Executor;
 import org.apache.ibatis.plugin.Intercepts;
 import org.apache.ibatis.plugin.Invocation;
-import org.apache.ibatis.plugin.Plugin;
 import org.apache.ibatis.plugin.Signature;
-
-import java.util.Properties;
 
 /**
  * MyBatis 自动分配数据库连接插件，需要注入多数据池数据源选择器，在 Executor close 方法l拦截，用于关闭自定义数据源

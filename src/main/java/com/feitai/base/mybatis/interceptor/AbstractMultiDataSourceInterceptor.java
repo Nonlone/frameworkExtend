@@ -4,9 +4,6 @@ import com.feitai.base.mybatis.MultipleDataSource;
 import com.feitai.utils.ObjectUtils;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.ibatis.executor.statement.RoutingStatementHandler;
-import org.apache.ibatis.executor.statement.StatementHandler;
-import org.apache.ibatis.mapping.MappedStatement;
 import org.apache.ibatis.plugin.Interceptor;
 import org.apache.ibatis.plugin.Invocation;
 

@@ -3,12 +3,9 @@ package com.feitai.base.json.serializer;
 import com.alibaba.fastjson.serializer.JSONSerializer;
 import com.alibaba.fastjson.serializer.ObjectSerializer;
 import com.alibaba.fastjson.serializer.SerializeWriter;
-import com.feitai.utils.datetime.DateTimeStyle;
-import com.feitai.utils.datetime.DateUtils;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
-import java.util.Date;
 
 public class BooleanSerializer implements ObjectSerializer {
 
