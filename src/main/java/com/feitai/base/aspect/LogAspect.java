@@ -106,7 +106,7 @@ public class LogAspect {
                 StopWatch stopWatch = stopWatchThreadLocal.get();
                 if (Objects.nonNull(stopWatch)) {
                     stopWatch.stop();
-                    message += " time-cost<" + stopWatch.getTime(logAnnotation.stopWatchUnit()) + ">" + logAnnotation.stopWatchUnit().name().toLowerCase();
+                    message += " stopWatch<" + stopWatch.getTime(logAnnotation.stopWatchUnit()) + ">" + logAnnotation.stopWatchUnit().name().toLowerCase();
                 }
             }
             log.error(message, e);
@@ -149,7 +149,7 @@ public class LogAspect {
                 }
             }
             if (logAnnotation.isStopWatch() && Objects.nonNull(stopWatch)) {
-                message += " time-cost<" + stopWatch.getTime(logAnnotation.stopWatchUnit()) + ">" + logAnnotation.stopWatchUnit().name().toLowerCase();
+                message += " stopWatch<" + stopWatch.getTime(logAnnotation.stopWatchUnit()) + ">" + logAnnotation.stopWatchUnit().name().toLowerCase();
             }
             switch (logAnnotation.level()) {
                 case ERROR:
