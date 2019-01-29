@@ -13,7 +13,6 @@ import java.util.regex.Pattern;
 /**
  * Fastjson Key 过滤器
  */
-@Deprecated
 @Slf4j
 public class KeyFilter implements ValueFilter {
 
