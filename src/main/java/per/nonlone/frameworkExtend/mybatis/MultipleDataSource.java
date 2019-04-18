@@ -1,6 +1,6 @@
 package per.nonlone.frameworkExtend.mybatis;
 
-import com.feitai.utils.ObjectUtils;
+import per.nonlone.utilsExtend.ObjectUtils;
 import lombok.Getter;
 import org.springframework.jdbc.datasource.lookup.AbstractRoutingDataSource;
 

@@ -1,7 +1,7 @@
 package per.nonlone.frameworkExtend.mybatis.interceptor;
 
 import per.nonlone.frameworkExtend.mybatis.MultipleDataSource;
-import com.feitai.utils.ObjectUtils;
+import per.nonlone.utilsExtend.ObjectUtils;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.plugin.Interceptor;

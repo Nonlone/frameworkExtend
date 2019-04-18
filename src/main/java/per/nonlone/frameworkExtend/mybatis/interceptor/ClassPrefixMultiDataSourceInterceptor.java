@@ -2,7 +2,7 @@ package per.nonlone.frameworkExtend.mybatis.interceptor;
 
 import per.nonlone.frameworkExtend.mybatis.MultipleDataSource;
 import per.nonlone.frameworkExtend.mybatis.SqlMapper;
-import com.feitai.utils.StringUtils;
+import per.nonlone.utilsExtend.StringUtils;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.cache.CacheKey;

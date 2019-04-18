@@ -1,6 +1,6 @@
 package per.nonlone.frameworkExtend.mybatis;
 
-import com.feitai.utils.ObjectUtils;
+import per.nonlone.utilsExtend.ObjectUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationContext;
 import tk.mybatis.mapper.MapperException;

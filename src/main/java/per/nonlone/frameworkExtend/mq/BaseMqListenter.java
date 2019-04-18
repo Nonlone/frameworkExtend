@@ -1,10 +1,11 @@
 package per.nonlone.frameworkExtend.mq;
 
 import com.alibaba.fastjson.JSON;
+import org.springframework.amqp.rabbit.retry.MessageRecoverer;
 import per.nonlone.frameworkExtend.exception.ValidationException;
-import com.feitai.utils.ObjectUtils;
-import com.feitai.utils.SnowFlakeIdGenerator;
-import com.feitai.utils.ValidateUtils;
+import per.nonlone.utilsExtend.ObjectUtils;
+import per.nonlone.utilsExtend.SnowFlakeIdGenerator;
+import per.nonlone.utilsExtend.ValidateUtils;
 import com.rabbitmq.client.Channel;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
@@ -18,11 +19,11 @@ import java.util.Set;
 
 /**
  * @version V1.0
- * @Description 类说明:MQ基础监听者(描述)
+ * @Description 类说明:MQ基础监听者，MessageRecover用于处理 getBodyMessage 方法异常，或者其他Mq处理异常（非业务处理异常）
  * @since 2016年12月19日
  */
 @Slf4j
-public abstract class BaseMqListenter<T> implements ChannelAwareMessageListener {
+public abstract class BaseMqListenter<T> implements ChannelAwareMessageListener, MessageRecoverer {
 
     /**
      * 擦除类
@@ -60,20 +61,11 @@ public abstract class BaseMqListenter<T> implements ChannelAwareMessageListener 
                     throw new ValidationException(classOfT, ValidateUtils.validateResultToString(validateResultSet));
                 }
             }
-            try {
-                MDC.put("TRACE_ID", String.valueOf(SnowFlakeIdGenerator.getDefaultNextId()));
-            } catch (IllegalArgumentException e) {
-                log.error(String.format("put traceId error class<%s> deliverTag<%s>", classOfT.getName(), message.getMessageProperties().getDeliveryTag()), e);
-            }
             onHandleMessage(t);
         } catch (Exception e) {
             log.error(String.format("onHandlerMessage error classOfT<%s> bean<%s>", classOfT.getName(), JSON.toJSONString(t)), e);
+            onHandleMessageException(t,e);
         } finally {
-            try {
-                MDC.remove("TRACE_ID");
-            } catch (IllegalArgumentException e) {
-                log.error(String.format("remove traceId error class<%s> deliverTag<%s>", classOfT.getName(), message.getMessageProperties().getDeliveryTag()), e);
-            }
             try {
                 channel.basicAck(message.getMessageProperties().getDeliveryTag(), false);
             } catch (IOException ioe) {
@@ -130,5 +122,15 @@ public abstract class BaseMqListenter<T> implements ChannelAwareMessageListener 
      * @param t
      */
     protected abstract void onHandleMessage(T t) throws Exception;
+
+
+    /**
+     * 处理 onHandleMessage 方法抛出的异常
+     * @param t
+     * @param throwable
+     */
+    protected void onHandleMessageException(T t,Throwable throwable){
+        return;
+    }
 
 }

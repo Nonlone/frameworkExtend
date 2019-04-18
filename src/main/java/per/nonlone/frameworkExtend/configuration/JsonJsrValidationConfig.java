@@ -5,7 +5,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.JSONPath;
 import per.nonlone.frameworkExtend.annotion.JsonJsrValidation;
-import com.feitai.utils.StringUtils;
+import per.nonlone.utilsExtend.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 

@@ -1,7 +1,7 @@
 package per.nonlone.frameworkExtend.configuration;
 
 import per.nonlone.frameworkExtend.mq.RabbitMqListener;
-import com.feitai.utils.StringUtils;
+import per.nonlone.utilsExtend.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.amqp.core.Queue;

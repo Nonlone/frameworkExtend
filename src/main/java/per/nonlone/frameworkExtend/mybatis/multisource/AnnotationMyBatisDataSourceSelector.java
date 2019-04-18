@@ -3,8 +3,8 @@ package per.nonlone.frameworkExtend.mybatis.multisource;
 import per.nonlone.frameworkExtend.mybatis.MultipleDataSource;
 import per.nonlone.frameworkExtend.mybatis.annotation.DataSource;
 import per.nonlone.frameworkExtend.mybatis.interceptor.ConnectionSignature;
-import com.feitai.utils.ObjectUtils;
-import com.feitai.utils.StringUtils;
+import per.nonlone.utilsExtend.ObjectUtils;
+import per.nonlone.utilsExtend.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.datasource.DataSourceUtils;
 

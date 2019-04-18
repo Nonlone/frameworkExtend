@@ -1,6 +1,6 @@
 package per.nonlone.frameworkExtend.mybatis.genid;
 
-import com.feitai.utils.SnowFlakeIdGenerator;
+import per.nonlone.utilsExtend.SnowFlakeIdGenerator;
 import tk.mybatis.mapper.genid.GenId;
 
 public class SnowFlakeGenId implements GenId<Long> {

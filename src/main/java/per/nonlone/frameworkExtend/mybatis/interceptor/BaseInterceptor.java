@@ -1,6 +1,6 @@
 package per.nonlone.frameworkExtend.mybatis.interceptor;
 
-import com.feitai.utils.ObjectUtils;
+import per.nonlone.utilsExtend.ObjectUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.executor.statement.BaseStatementHandler;
 import org.apache.ibatis.executor.statement.RoutingStatementHandler;

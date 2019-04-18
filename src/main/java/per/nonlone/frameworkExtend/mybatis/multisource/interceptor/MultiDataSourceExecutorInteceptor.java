@@ -3,7 +3,7 @@ package per.nonlone.frameworkExtend.mybatis.multisource.interceptor;
 import per.nonlone.frameworkExtend.mybatis.interceptor.BaseExecutorInterceptor;
 import per.nonlone.frameworkExtend.mybatis.interceptor.ConnectionSignature;
 import per.nonlone.frameworkExtend.mybatis.multisource.MyBatisDataSourceSelector;
-import com.feitai.utils.ObjectUtils;
+import per.nonlone.utilsExtend.ObjectUtils;
 import lombok.Data;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;

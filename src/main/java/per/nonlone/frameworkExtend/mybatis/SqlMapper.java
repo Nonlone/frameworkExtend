@@ -1,6 +1,6 @@
 package per.nonlone.frameworkExtend.mybatis;
 
-import com.feitai.utils.digest.MD5Utils;
+import per.nonlone.utilsExtend.digest.MD5Utils;
 import org.apache.ibatis.builder.StaticSqlSource;
 import org.apache.ibatis.exceptions.TooManyResultsException;
 import org.apache.ibatis.mapping.*;

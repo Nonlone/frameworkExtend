@@ -1,6 +1,6 @@
 package per.nonlone.frameworkExtend.mybatis.interceptor;
 
-import com.feitai.utils.ObjectUtils;
+import per.nonlone.utilsExtend.ObjectUtils;
 import org.apache.ibatis.executor.BaseExecutor;
 import org.apache.ibatis.executor.CachingExecutor;
 import org.apache.ibatis.executor.Executor;

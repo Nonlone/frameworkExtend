@@ -150,7 +150,7 @@ public class ClassPrefixMyBatisDataSourceSelector extends BaseMyBatisDataSourceS
         private int lengthOfCalssName;
 
         public ClassPrefixMatcher(String className) {
-            this.dotsOfClassName = com.feitai.utils.StringUtils.countMatches(className, ".");
+            this.dotsOfClassName = per.nonlone.utilsExtend.StringUtils.countMatches(className, ".");
             this.lengthOfCalssName = className.length();
         }
 

@@ -1,7 +1,7 @@
 package per.nonlone.frameworkExtend.mybatis.interceptor;
 
 import com.alibaba.fastjson.JSON;
-import com.feitai.utils.StringUtils;
+import per.nonlone.utilsExtend.StringUtils;
 import lombok.Data;
 import lombok.Getter;
 
