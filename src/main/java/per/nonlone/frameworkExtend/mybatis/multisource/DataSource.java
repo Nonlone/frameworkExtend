@@ -1,4 +1,4 @@
-package per.nonlone.frameworkExtend.mybatis.annotation;
+package per.nonlone.frameworkExtend.mybatis.multisource;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
