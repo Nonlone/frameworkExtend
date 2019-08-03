@@ -1,6 +1,5 @@
 package per.nonlone.frameworkExtend.mybatis.interceptor;
 
-import per.nonlone.utilsExtend.ObjectUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.executor.statement.BaseStatementHandler;
 import org.apache.ibatis.executor.statement.RoutingStatementHandler;
@@ -9,6 +8,7 @@ import org.apache.ibatis.mapping.MappedStatement;
 import org.apache.ibatis.plugin.Interceptor;
 import org.apache.ibatis.plugin.Invocation;
 import org.apache.ibatis.plugin.Plugin;
+import per.nonlone.utilsExtend.ObjectUtils;
 
 import java.util.Objects;
 import java.util.Properties;

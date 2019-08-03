@@ -1,6 +1,5 @@
 package per.nonlone.frameworkExtend.mybatis.interceptor;
 
-import per.nonlone.frameworkExtend.mybatis.annotation.AutoBeanHandler;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.executor.statement.StatementHandler;
@@ -18,7 +17,7 @@ import java.util.Properties;
 @Intercepts({
         @Signature(type = StatementHandler.class, method = "prepare", args = {Connection.class, Integer.class})
 })
-public class AutoBeanIntecepter extends BaseInterceptor  {
+public class AutoBeanIntecepter extends BaseInterceptor {
 
     private AutoBeanHandler autoBeanHandler;
 
@@ -33,9 +32,6 @@ public class AutoBeanIntecepter extends BaseInterceptor  {
 
     @Override
     public Object intercept(Invocation invocation) throws Throwable {
-        if (log.isDebugEnabled()) {
-            log.debug("AutoBeanIntecepter intercept before Invocation.proceed()");
-        }
         StatementHandler handler = getStatementHandlerFromStatementHandler(invocation);
         BoundSql boundSql = handler.getBoundSql();
         Object object = boundSql.getParameterObject();
@@ -44,7 +40,6 @@ public class AutoBeanIntecepter extends BaseInterceptor  {
             autoBeanHandler.handleBoundSqlAndParameterObject(boundSql, constrainClass.cast(object));
         }
         Object result = invocation.proceed();
-        log.debug("op<intercept> after Invocation.proceed()");
         return result;
     }
 

@@ -1,17 +1,15 @@
 package per.nonlone.frameworkExtend.mybatis.multisource;
 
-import per.nonlone.frameworkExtend.mybatis.MultipleDataSource;
-import per.nonlone.frameworkExtend.mybatis.interceptor.ConnectionSignature;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.jdbc.datasource.DataSourceUtils;
+import per.nonlone.frameworkExtend.datasource.MultipleDataSource;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
 
 
 /**
@@ -24,34 +22,133 @@ public abstract class BaseMyBatisDataSourceSelector implements MyBatisDataSource
     @Getter
     protected MultipleDataSource multipleDataSource;
 
-    protected ConcurrentHashMap<String, ConnectionSignature> connectionSignatureMap;
-
     protected ThreadLocal<Connection> connectionThreadLocal = new ThreadLocal<>();
 
     protected ThreadLocal<DataSource> dataSourceThreadLocal = new ThreadLocal<>();
 
+    protected ThreadLocal<Boolean> firstTransactionThreadLocal = new ThreadLocal<>();
 
-    protected BaseMyBatisDataSourceSelector(MultipleDataSource multipleDataSource, ConcurrentHashMap<String, ConnectionSignature> connectionSignatureMap) {
+    protected ThreadLocal<Boolean> dirtyTransactionThreadLocal = new ThreadLocal<>();
+
+
+    protected BaseMyBatisDataSourceSelector(MultipleDataSource multipleDataSource) {
         this.multipleDataSource = multipleDataSource;
-        this.connectionSignatureMap = connectionSignatureMap;
+    }
+
+    /**
+     * 获取当前连接
+     *
+     * @return
+     */
+    @Override
+    public Connection getCurrentConnection() {
+        return connectionThreadLocal.get();
+    }
+
+    /**
+     * 获取当前数据池
+     *
+     * @return
+     */
+    @Override
+    public DataSource getCurrentDataSource() {
+        return dataSourceThreadLocal.get();
+    }
+
+    /**
+     * 判断事务是否存在未提交数据
+     *
+     * @return
+     */
+    @Override
+    public boolean isTransactionDirty() {
+        if (Objects.nonNull(dirtyTransactionThreadLocal.get())) {
+            return dirtyTransactionThreadLocal.get();
+        }
+        return false;
+    }
+
+    @Override
+    public boolean markTransactionDirty() {
+        if (!isTransactionDirty()) {
+            dirtyTransactionThreadLocal.set(true);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * 获取当前是否首次事务状态
+     *
+     * @return
+     */
+    @Override
+    public synchronized boolean isFirstTranscation() {
+        if (Objects.nonNull(firstTransactionThreadLocal.get())) {
+            return firstTransactionThreadLocal.get();
+        }
+        return true;
+    }
+
+    /**
+     * 标记首次事务开始
+     *
+     * @return
+     */
+    @Override
+    public synchronized boolean markFirstTranscationBegin() {
+        if (isFirstTranscation()) {
+            firstTransactionThreadLocal.set(false);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * 标记首次事务结束
+     *
+     * @return
+     */
+    @Override
+    public synchronized boolean markFirstTranscationFinish() {
+        if (!isFirstTranscation()) {
+            firstTransactionThreadLocal.set(true);
+            return true;
+        }
+        return false;
     }
 
 
     @Override
-    public Connection getConnection(Class<?> mapperClass, Connection connection) {
-        javax.sql.DataSource dataSource = getDataSource(mapperClass,connection);
-        if(Objects.nonNull(dataSource)){
+    public void setThreadLocalConnection(Connection connection) {
+        connectionThreadLocal.set(connection);
+    }
+
+    @Override
+    public void setThreadLocalDataSource(DataSource dataSource) {
+        dataSourceThreadLocal.set(dataSource);
+    }
+
+    @Override
+    public void clearThreadLocal() {
+        dataSourceThreadLocal.remove();
+        connectionThreadLocal.remove();
+        firstTransactionThreadLocal.remove();
+        dirtyTransactionThreadLocal.remove();
+    }
+
+    @Override
+    public Connection getConnection(Class<?> mapperClass) {
+        DataSource dataSource = getDataSource(mapperClass);
+        if (Objects.nonNull(dataSource)) {
             try {
                 Connection newConnection = dataSource.getConnection();
-                // 放入TheadLocal，供关闭时候使用
-                dataSourceThreadLocal.set(dataSource);
-                connectionThreadLocal.set(newConnection);
                 return newConnection;
             } catch (SQLException sqle) {
                 throw new RuntimeException(sqle);
             }
         }
-        return connection;
+        return null;
     }
 
     /**
@@ -60,27 +157,28 @@ public abstract class BaseMyBatisDataSourceSelector implements MyBatisDataSource
     @Override
     public void close() {
         // 判断是否有事务标记
-        if (Objects.nonNull(connectionThreadLocal.get())) {
-            // 提交事务
+        DataSource dataSource = dataSourceThreadLocal.get();
+        Connection connection = connectionThreadLocal.get();
+        // 关闭数据库连接
+        if (ObjectUtils.allNotNull(dataSource, connection)) {
+            if (log.isDebugEnabled()) {
+                log.debug(String.format(" DataSourceUtils.releaseConnection connection<%s>", connection));
+            }
+            DataSourceUtils.releaseConnection(connection, dataSource);
+            connectionThreadLocal.remove();
+        } else if (Objects.nonNull(connection)) {
             try {
-                connectionThreadLocal.get().commit();
+                connection.close();
+                connectionThreadLocal.remove();
             } catch (SQLException sqle) {
                 throw new RuntimeException(sqle);
             }
-        }
-        // 关闭数据库连接
-        if (ObjectUtils.allNotNull(dataSourceThreadLocal.get(), connectionThreadLocal.get())) {
-            DataSourceUtils.releaseConnection(connectionThreadLocal.get(), dataSourceThreadLocal.get());
-            dataSourceThreadLocal.remove();
-            connectionThreadLocal.remove();
-        } else if (ObjectUtils.allNotNull(connectionThreadLocal.get())) {
-            try {
-                Connection connection = connectionThreadLocal.get();
-                connection.close();
-            } catch (SQLException sqle) {
-                throw new RuntimeException(sqle);
-            } finally {
-                connectionThreadLocal.remove();
+            if (log.isDebugEnabled()) {
+                log.debug(String.format("close connection without dataSource"));
+            }
+        } else {
+            if (log.isDebugEnabled()) {
+                log.debug(String.format("connection is null , can not close"));
             }
         }
     }
