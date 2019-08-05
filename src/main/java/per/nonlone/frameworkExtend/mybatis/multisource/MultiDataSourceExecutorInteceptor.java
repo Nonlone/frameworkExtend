@@ -59,7 +59,7 @@ public class MultiDataSourceExecutorInteceptor extends BaseExecutorInterceptor {
     /**
      * 成员变量常量，事务
      */
-    private static final Field FIELD_TRANSACTION = ObjectUtils.getAccessibleField(BaseExecutor.class, TRANSACTION);
+//    private static final Field FIELD_TRANSACTION = ObjectUtils.getAccessibleField(BaseExecutor.class, TRANSACTION);
 
     /**
      * 成员变量常量，数据源
@@ -374,7 +374,7 @@ public class MultiDataSourceExecutorInteceptor extends BaseExecutorInterceptor {
             // 或者映射 MapperClass
             Class<?> mapperClass = getMapperClassFromMapperStatement(mappedStatement);
             // 获取事务包裹类
-            Transaction transaction = (Transaction) FIELD_TRANSACTION.get(baseExecutor);
+            Transaction transaction = baseExecutor.getTransaction();
             if (Objects.nonNull(transaction)) {
 
                 // 修改 Transaction
