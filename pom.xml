@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>per.nonlone</groupId>
-    <artifactId>frameworkExtend</artifactId>
+    <artifactId>framework</artifactId>
     <version>1.3.2-SNAPSHOT</version>
     <packaging>jar</packaging>
 
@@ -26,36 +26,20 @@
         <tk.mybatis.version>2.0.3</tk.mybatis.version>
         <pagehelper.version>1.2.5</pagehelper.version>
         <hystrix.version>1.5.18</hystrix.version>
+        <druid.version>1.1.20</druid.version>
+        <kafka-clients.version>1.1.1</kafka-clients.version>
+        <resilience4j.version>1.2.0</resilience4j.version>
     </properties>
 
 
-    <repositories>
-        <repository>
-            <id>feitai-maven</id>
-            <name>feitai-maven</name>
-            <url>http://nex-repositories.zuzuche.com/repository/maven-public/</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </repository>
-    </repositories>
-
-    <distributionManagement>
-        <repository>
-            <id>feitai-release</id>
-            <url>http://nexus.feitai.info/repository/feitai-release/</url>
-        </repository>
-        <snapshotRepository>
-            <id>feitai-snapshot</id>
-            <url>http://nexus.feitai.info/repository/feitai-snapshot/</url>
-        </snapshotRepository>
-    </distributionManagement>
-
-
     <dependencies>
+
+        <!-- 私有工具类 -->
+        <dependency>
+            <groupId>per.nonlone</groupId>
+            <artifactId>utils</artifactId>
+            <version>1.5.0-SNAPSHOT</version>
+        </dependency>
 
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -70,12 +54,6 @@
             <artifactId>junit</artifactId>
             <version>${junit.version}</version>
             <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>per.nonlone</groupId>
-            <artifactId>utilsExtend</artifactId>
-            <version>1.5.0-SNAPSHOT</version>
         </dependency>
 
         <!-- boot-->
@@ -121,11 +99,26 @@
             <artifactId>reflections</artifactId>
             <version>0.9.10</version>
         </dependency>
+
         <!-- 携程apollo 配置中心 -->
         <dependency>
             <groupId>com.ctrip.framework.apollo</groupId>
             <artifactId>apollo-client</artifactId>
             <version>1.0.0</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.apache.kafka/kafka-clients -->
+        <dependency>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>kafka-clients</artifactId>
+            <version>${kafka-clients.version}</version>
+        </dependency>
+
+        <!-- druid数据池 -->
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>druid</artifactId>
+            <version>${druid.version}</version>
         </dependency>
 
         <!-- Hystrix -->
@@ -179,6 +172,25 @@
                     <groupId>org.aspectj</groupId>
                 </exclusion>
             </exclusions>
+        </dependency>
+
+        <!-- resilience4j toolset -->
+        <dependency>
+            <groupId>io.github.resilience4j</groupId>
+            <artifactId>resilience4j-circuitbreaker</artifactId>
+            <version>${resilience4j.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.github.resilience4j</groupId>
+            <artifactId>resilience4j-retry</artifactId>
+            <version>1.2.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.github.resilience4j</groupId>
+            <artifactId>resilience4j-ratelimiter</artifactId>
+            <version>1.2.0</version>
         </dependency>
 
     </dependencies>
@@ -273,19 +285,6 @@
             </plugin>
         </plugins>
     </build>
-
-
-    <scm>
-        <!--只读权限的git地址，可以和developerConnection一样，如果权限没有细分的话-->
-        <connection>scm:git:http://git.feitai.info/jieya-server/base.git</connection>
-        <!--具有写权限的git地址-->
-        <url>/git.feitai.info/jieya-server/base</url>
-        <!--项目查看地址-->
-        <developerConnection>scm:git:http://git.feitai.info/jieya-server/base.git</developerConnection>
-        <tag>HEAD</tag>
-    </scm>
-
-
     <reporting>
         <plugins>
             <plugin>
