@@ -1,14 +1,9 @@
 package per.nonlone.common.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.github.resilience4j.circuitbreaker.CircuitBreaker;
-import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
-import io.github.resilience4j.core.IntervalFunction;
-import io.github.resilience4j.retry.Retry;
-import io.github.resilience4j.retry.RetryConfig;
-import io.vavr.control.Try;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.aop.framework.AopContext;
 import org.springframework.stereotype.Service;
 import per.nonlone.common.exception.OutServiceException;
 import per.nonlone.utils.StringUtils;
@@ -21,16 +16,15 @@ import java.lang.reflect.Type;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.function.Function;
-import java.util.regex.Pattern;
 
 @Slf4j
 @Service
+@NoArgsConstructor
 public abstract class BaseOutService {
 
 
@@ -40,50 +34,30 @@ public abstract class BaseOutService {
 
     public static final String CODE = "code";
 
-    protected static final Pattern PATTERN = Pattern.compile("[\\u4e00-\\u9fa5]+");
-
     protected ObjectMapper objectMapper = JacksonUtils.getCachedNormalInstance();
 
-
-    /**
-     * 重试器
-     */
-    private final static Retry retry = Retry.of(BaseOutService.class.getName(), RetryConfig.custom()
-            .intervalFunction(IntervalFunction.ofRandomized(Duration.ofMillis(100)))
-            .retryOnException(t->{
-                // 非 OutServiceException 及其子类重试
-                return !OutServiceException.class.isAssignableFrom(t.getClass());
-            })
-//            .ignoreExceptions(OutServiceException.class)
-            .build());
-
-    /**
-     * 断路器
-     */
-    private final static CircuitBreaker circuitBreaker = CircuitBreaker.of(BaseOutService.class.getName(), CircuitBreakerConfig.custom()
-            .ignoreException(t->{
-                return OutServiceException.class.isAssignableFrom(t.getClass());
-            })
-            .build());
+    @Setter
+    public Function<Callable<?>, Callable<?>> decorator;
 
 
-    /**
-     * 获取重试器
-     * @return
-     */
-    protected Retry getRetry(){
-        return retry;
+    protected BaseOutService(Function<Callable<?>, Callable<?>> decorator){
+        this.decorator = decorator;
     }
 
     /**
-     * 获取断路器
+     * 包装并执行
+     * @param callable
+     * @param <T>
      * @return
+     * @throws Exception
      */
-    protected CircuitBreaker getCircuitBreaker(){
-        return circuitBreaker;
+    protected <T> T doOperateWithDecorator(final Callable<T> callable) throws Exception {
+        Callable<T> executor = callable;
+        if(Objects.nonNull(decorator)){
+            executor = (Callable<T>)decorator.apply(executor);
+        }
+        return callable.call();
     }
-
-
 
 
     /**
@@ -109,24 +83,6 @@ public abstract class BaseOutService {
             return (OutServiceException) exception;
         }
         throw runtimeException;
-    }
-
-    /**
-     * 获取服务自身
-     *
-     * @return
-     */
-    @Deprecated
-    protected BaseOutService getThis() {
-        try {
-            if (AopContext.currentProxy() instanceof BaseOutService) {
-                return (BaseOutService) AopContext.currentProxy();
-            }
-        } catch (IllegalStateException ise) {
-            // Aop 服务为空
-            log.warn(String.format("getThis() is useless but error %s",ise.getMessage()));
-        }
-        return this;
     }
 
     /**
@@ -199,26 +155,12 @@ public abstract class BaseOutService {
                 throw new OutServiceException(message, ioe);
             }
         };
-        // 获取重试器包裹
-        if(Objects.nonNull(getRetry())){
-            callable = Retry.decorateCallable(getRetry(),callable);
+        try{
+            // 包装执行
+            return doOperateWithDecorator(callable);
+        }catch (Exception e){
+            throw new OutServiceException(e);
         }
-        // 获取短路器包裹
-        if(Objects.nonNull(getCircuitBreaker())){
-            callable = getCircuitBreaker().decorateCallable(callable);
-        }
-        // 执行结果
-        Try<R> result = Try.<R>ofCallable(callable);
-        if(result.isSuccess()){
-            return result.get();
-        }else if(result.isFailure()){
-            if(OutServiceException.class.isInstance(result.failed().get())){
-                throw (OutServiceException)result.failed().get();
-            }else{
-                throw new OutServiceException(result.failed().get());
-            }
-        }
-        throw new OutServiceException();
     }
 
 
@@ -337,20 +279,13 @@ public abstract class BaseOutService {
                 throw new OutServiceException(message, e);
             }
         };
-        Try<R> result = Try.<R>ofCallable(CircuitBreaker.decorateCallable(circuitBreaker, Retry.decorateCallable(retry, callable)));
-        if(result.isSuccess()){
-            return result.get();
-        }else if(result.isFailure()){
-            if(OutServiceException.class.isInstance(result.failed().get())){
-                throw (OutServiceException)result.failed().get();
-            }else{
-                throw new OutServiceException(result.failed().get());
-            }
+        try{
+            // 包装执行
+            return doOperateWithDecorator(callable);
+        }catch (Exception e){
+            throw new OutServiceException(e);
         }
-        throw new OutServiceException();
-
     }
-
 
 
     private OutServiceException buildOutServiceException(String responseBody, String details, Exception e) {
@@ -384,7 +319,7 @@ public abstract class BaseOutService {
             outServiceException.setResponseMessage((String) json.get(MESSAGE));
         }
         outServiceException.setResponse(responseBody);
-        if (StringUtils.isNotBlank(outServiceException.getMessage()) && !PATTERN.matcher(outServiceException.getMessage()).find()) {
+        if (StringUtils.isNotBlank(outServiceException.getMessage())) {
             outServiceException.setResponseMessage(null);
         }
         return outServiceException;
