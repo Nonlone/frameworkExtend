@@ -14,6 +14,7 @@ import per.nonlone.common.exception.OutServiceException;
 import java.time.Duration;
 import java.util.Objects;
 import java.util.concurrent.Callable;
+import java.util.function.Function;
 
 /**
  * 使用 resilience4j 增强
@@ -22,9 +23,29 @@ import java.util.concurrent.Callable;
 @Service
 public abstract class BaseResilience4jOutService extends BaseOutService {
 
+    @Setter
+    private Function<Callable<?>, Callable<?>> decorator;
 
-    public BaseResilience4jOutService() {
-        super(t -> {
+    /**
+     * 重试器
+     */
+    @Setter
+    protected Retry retry = Retry.of(BaseOutService.class.getName(), RetryConfig.custom()
+            .intervalFunction(IntervalFunction.ofRandomized(Duration.ofMillis(100)))
+            .retryOnException(t -> !OutServiceException.class.isAssignableFrom(t.getClass()))
+            .build());
+
+    /**
+     * 断路器
+     */
+    @Setter
+    protected CircuitBreaker circuitBreaker = CircuitBreaker.of(BaseOutService.class.getName(), CircuitBreakerConfig.custom()
+            .ignoreException(t -> OutServiceException.class.isAssignableFrom(t.getClass()))
+            .build());
+
+    public BaseResilience4jOutService(BeanConvertor beanConvertor) {
+        super(beanConvertor);
+        this.decorator = t -> {
             Callable<?> callable = t;
             // 获取重试器包裹
             if (Objects.nonNull(retry)) {
@@ -35,7 +56,7 @@ public abstract class BaseResilience4jOutService extends BaseOutService {
                 callable = circuitBreaker.decorateCallable(callable);
             }
             final Callable<?> finalCallable = callable;
-            return () -> {
+            Callable<?> resultCallable = () -> {
                 // 执行结果
                 Try result = Try.ofCallable(finalCallable);
                 if (result.isSuccess()) {
@@ -49,26 +70,14 @@ public abstract class BaseResilience4jOutService extends BaseOutService {
                 }
                 throw new OutServiceException();
             };
-        });
+            if(Objects.isNull(decorator)){
+                return decorator.apply(resultCallable);
+            }
+            return callable;
+        };
     }
 
 
-    /**
-     * 重试器
-     */
-    @Setter
-    protected static Retry retry = Retry.of(BaseOutService.class.getName(), RetryConfig.custom()
-            .intervalFunction(IntervalFunction.ofRandomized(Duration.ofMillis(100)))
-            .retryOnException(t -> !OutServiceException.class.isAssignableFrom(t.getClass()))
-            .build());
-
-    /**
-     * 断路器
-     */
-    @Setter
-    protected static CircuitBreaker circuitBreaker = CircuitBreaker.of(BaseOutService.class.getName(), CircuitBreakerConfig.custom()
-            .ignoreException(t -> OutServiceException.class.isAssignableFrom(t.getClass()))
-            .build());
 
 }
 

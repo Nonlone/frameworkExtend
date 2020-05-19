@@ -1,7 +1,5 @@
 package per.nonlone.common.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -24,7 +22,6 @@ import java.util.function.Function;
 
 @Slf4j
 @Service
-@NoArgsConstructor
 public abstract class BaseOutService {
 
 
@@ -34,15 +31,63 @@ public abstract class BaseOutService {
 
     public static final String CODE = "code";
 
-    protected ObjectMapper objectMapper = JacksonUtils.getCachedNormalInstance();
+    @Setter
+    private Function<Callable<?>, Callable<?>> decorator;
 
     @Setter
-    public Function<Callable<?>, Callable<?>> decorator;
+    private BeanConvertor beanConvertor;
 
 
-    protected BaseOutService(Function<Callable<?>, Callable<?>> decorator){
+    /**
+     * 默认Response 解析器
+     */
+    public interface BeanConvertor {
+
+        /**
+         * 转换成Map
+         * @param t
+         * @param <T>
+         * @return
+         * @throws IOException
+         */
+        <T> Map<String, Object> toMap(T t) throws IOException;
+
+        /**
+         * 反序列化
+         *
+         * @param responseBody
+         * @param classOfT
+         * @param <T>
+         * @return
+         */
+        <T> T deserialize(String responseBody, Class<T> classOfT) throws IOException;
+
+        /**
+         * 反序列化
+         *
+         * @param responseBody
+         * @param type
+         * @param <T>
+         * @return
+         */
+        <T> T deserialize(String responseBody, Type type) throws IOException;
+    }
+
+
+    /**
+     * 构造传反序列化工具
+     * @param beanConvertor
+     */
+    protected BaseOutService(BeanConvertor beanConvertor) {
+        this.beanConvertor = beanConvertor;
+    }
+
+
+    protected BaseOutService(BeanConvertor beanConvertor, Function<Callable<?>, Callable<?>> decorator) {
+        this(beanConvertor);
         this.decorator = decorator;
     }
+
 
     /**
      * 包装并执行
@@ -53,20 +98,10 @@ public abstract class BaseOutService {
      */
     protected <T> T doOperateWithDecorator(final Callable<T> callable) throws Exception {
         Callable<T> executor = callable;
-        if(Objects.nonNull(decorator)){
-            executor = (Callable<T>)decorator.apply(executor);
+        if (Objects.nonNull(decorator)) {
+            executor = (Callable<T>) decorator.apply(executor);
         }
         return callable.call();
-    }
-
-
-    /**
-     * 获取ObjectMapper
-     *
-     * @return
-     */
-    protected ObjectMapper getObjectMapper() {
-        return this.objectMapper;
     }
 
 
@@ -100,7 +135,7 @@ public abstract class BaseOutService {
     public <T, R> R operate(String url, Object request, Type type, Function<T, R> handleFunction, String addtionalMessage) {
         return this.operate(url, request, handleFunction, t -> {
             try {
-                return JacksonUtils.stringToObject(getObjectMapper(), t, type);
+                return beanConvertor.deserialize(t, type);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -155,26 +190,38 @@ public abstract class BaseOutService {
                 throw new OutServiceException(message, ioe);
             }
         };
-        try{
+        try {
             // 包装执行
             return doOperateWithDecorator(callable);
-        }catch (Exception e){
+        } catch (Exception e) {
             throw new OutServiceException(e);
         }
     }
 
 
-    public Map<String, String> convertToRequestParameters(Object request) throws UnsupportedEncodingException {
+    public Map<String, String> convertToRequestParameters(Object request) throws IOException {
         return convertToRequestParameters(request, true, StandardCharsets.UTF_8);
     }
 
-    public Map<String, String> convertToRequestParameters(Object request, boolean isEncode, Charset charset) throws UnsupportedEncodingException {
+    /**
+     * g构建请求参数
+     * @param request
+     * @param isEncode
+     * @param charset
+     * @return
+     * @throws UnsupportedEncodingException
+     */
+    public Map<String, String> convertToRequestParameters(Object request, boolean isEncode, Charset charset) throws IOException {
         Map<String, String> params = new HashMap<>();
-        for (Map.Entry<String, Object> entry : JacksonUtils.toJSONMap(getObjectMapper(), request).entrySet()) {
+        for (Map.Entry<String, Object> entry : beanConvertor.toMap(request).entrySet()) {
             if (Objects.nonNull(entry.getValue()) && (entry.getValue() instanceof String) && StringUtils.isNotBlank((String) entry.getValue())) {
-                params.put(entry.getKey(), isEncode ? URLEncoder.encode((String) entry.getValue(), charset.name()) : (String) entry.getValue());
+                params.put(entry.getKey(), isEncode
+                        ? URLEncoder.encode((String) entry.getValue(), charset.name())
+                        : (String) entry.getValue());
             } else if (Objects.nonNull(entry.getValue()) && !(entry.getValue() instanceof String)) {
-                params.put(entry.getKey(), isEncode ? URLEncoder.encode(entry.getValue().toString(), charset.name()) : entry.getValue().toString());
+                params.put(entry.getKey(), isEncode
+                        ? URLEncoder.encode(entry.getValue().toString(), charset.name())
+                        : entry.getValue().toString());
             }
         }
         return params;
@@ -198,7 +245,7 @@ public abstract class BaseOutService {
             Map<String, String> params = convertToRequestParameters(request);
             return operateWithForm(url, params, function, t -> {
                 try {
-                    return JacksonUtils.stringToObject(getObjectMapper(), t, type);
+                    return beanConvertor.deserialize(t, type);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
@@ -224,7 +271,7 @@ public abstract class BaseOutService {
     public <T, R> R operateWithForm(String url, Map<String, String> request, Type type, Function<T, R> function, String addtionalMessage) {
         return operateWithForm(url, request, function, t -> {
             try {
-                return JacksonUtils.stringToObject(getObjectMapper(), t, type);
+                return beanConvertor.deserialize(t, type);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -243,7 +290,7 @@ public abstract class BaseOutService {
      * @return
      */
     public <T, R> R operateWithForm(String url, Map<String, String> request, Function<T, R> handleFunction, Function<String, T> parseFunction, boolean isAcceptNull, String addtionalMessage) {
-        Callable<R> callable = ()->{
+        Callable<R> callable = () -> {
             String message;
             try {
                 T response = null;
@@ -279,10 +326,10 @@ public abstract class BaseOutService {
                 throw new OutServiceException(message, e);
             }
         };
-        try{
+        try {
             // 包装执行
             return doOperateWithDecorator(callable);
-        }catch (Exception e){
+        } catch (Exception e) {
             throw new OutServiceException(e);
         }
     }
@@ -291,7 +338,7 @@ public abstract class BaseOutService {
     private OutServiceException buildOutServiceException(String responseBody, String details, Exception e) {
         Map<String, Object> json = null;
         try {
-            json = JacksonUtils.toJSONMap(getObjectMapper(), responseBody);
+            json = beanConvertor.toMap(responseBody);
         } catch (IOException ex) {
             log.error(String.format("toJSONMap error %s resposneBody<%s>", ex.getMessage(), responseBody), ex);
             OutServiceException outServiceException = new OutServiceException();
