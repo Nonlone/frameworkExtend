@@ -6,7 +6,6 @@ import org.springframework.stereotype.Service;
 import per.nonlone.common.exception.OutServiceException;
 import per.nonlone.utils.StringUtils;
 import per.nonlone.utils.http.OkHttpClientUtils;
-import per.nonlone.utils.jackson.JacksonUtils;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -43,6 +42,8 @@ public abstract class BaseOutService {
      */
     public interface BeanConvertor {
 
+        <T> String serialize(T t) throws IOException;
+
         /**
          * 转换成Map
          * @param t
@@ -50,7 +51,7 @@ public abstract class BaseOutService {
          * @return
          * @throws IOException
          */
-        <T> Map<String, Object> toMap(T t) throws IOException;
+        <T> Map<String, Object> deserializeToMap(T t) throws IOException;
 
         /**
          * 反序列化
@@ -163,7 +164,7 @@ public abstract class BaseOutService {
                     try {
                         response = parseFunction.apply(responseBody);
                     } catch (Exception e) {
-                        message = String.format(" operate parse error message <%s> %s  url<%s> request<%s>  response<%s>", e.getMessage(), addtionalMessage, url, JacksonUtils.toJSONString(request), responseBody);
+                        message = String.format(" operate parse error message <%s> %s  url<%s> request<%s>  response<%s>", e.getMessage(), addtionalMessage, url, beanConvertor.serialize(request), responseBody);
                         log.error(message, e);
                         throw buildOutServiceException(responseBody, message, e);
                     }
@@ -181,11 +182,11 @@ public abstract class BaseOutService {
                     }
                     return r;
                 }
-                message = String.format(" operate fail %s url<%s> request<%s> response<%s>", addtionalMessage, url, JacksonUtils.toJSONString(request), JacksonUtils.toJSONString(response));
+                message = String.format(" operate fail %s url<%s> request<%s> response<%s>", addtionalMessage, url, beanConvertor.serialize(request), beanConvertor.serialize(response));
                 log.warn(message);
                 throw buildOutServiceException(responseBody, message, null);
             } catch (IOException ioe) {
-                message = String.format(" operate io error message<%s> %s  url<%s> request<%s> ", ioe.getMessage(), addtionalMessage, url, JacksonUtils.toJSONString(request));
+                message = String.format(" operate io error message<%s> %s  url<%s> request<%s> ", ioe.getMessage(), addtionalMessage, url, beanConvertor.serialize(request));
                 log.error(message, ioe);
                 throw new OutServiceException(message, ioe);
             }
@@ -213,7 +214,7 @@ public abstract class BaseOutService {
      */
     public Map<String, String> convertToRequestParameters(Object request, boolean isEncode, Charset charset) throws IOException {
         Map<String, String> params = new HashMap<>();
-        for (Map.Entry<String, Object> entry : beanConvertor.toMap(request).entrySet()) {
+        for (Map.Entry<String, Object> entry : beanConvertor.deserializeToMap(request).entrySet()) {
             if (Objects.nonNull(entry.getValue()) && (entry.getValue() instanceof String) && StringUtils.isNotBlank((String) entry.getValue())) {
                 params.put(entry.getKey(), isEncode
                         ? URLEncoder.encode((String) entry.getValue(), charset.name())
@@ -299,7 +300,7 @@ public abstract class BaseOutService {
                     try {
                         response = parseFunction.apply(responseBody);
                     } catch (Exception e) {
-                        message = String.format(" operateWithForm parse error message<%s> %s  url<%s> request<%s> response<%s>", e.getMessage(), addtionalMessage, url, JacksonUtils.toJSONString(request), responseBody);
+                        message = String.format(" operateWithForm parse error message<%s> %s  url<%s> request<%s> response<%s>", e.getMessage(), addtionalMessage, url, beanConvertor.serialize(request), responseBody);
                         log.error(message, e);
                         throw buildOutServiceException(responseBody, message, e);
                     }
@@ -317,11 +318,11 @@ public abstract class BaseOutService {
                     }
                     return r;
                 }
-                message = String.format(" operateWithForm fail %s url<%s> request<%s> response<%s>", addtionalMessage, url, JacksonUtils.toJSONString(request), JacksonUtils.toJSONString(response));
+                message = String.format(" operateWithForm fail %s url<%s> request<%s> response<%s>", addtionalMessage, url, beanConvertor.serialize(request), beanConvertor.serialize(response));
                 log.warn(message);
                 throw buildOutServiceException(responseBody, message, null);
             } catch (IOException e) {
-                message = String.format(" operateWithForm io error message<%s> %s  url<%s> request<%s> ", e.getMessage(), addtionalMessage, url, JacksonUtils.toJSONString(request));
+                message = String.format(" operateWithForm io error message<%s> %s  url<%s> request<%s> ", e.getMessage(), addtionalMessage, url, beanConvertor.serialize(request));
                 log.error(message, e);
                 throw new OutServiceException(message, e);
             }
@@ -338,7 +339,7 @@ public abstract class BaseOutService {
     private OutServiceException buildOutServiceException(String responseBody, String details, Exception e) {
         Map<String, Object> json = null;
         try {
-            json = beanConvertor.toMap(responseBody);
+            json = beanConvertor.deserializeToMap(responseBody);
         } catch (IOException ex) {
             log.error(String.format("toJSONMap error %s resposneBody<%s>", ex.getMessage(), responseBody), ex);
             OutServiceException outServiceException = new OutServiceException();
