@@ -19,7 +19,7 @@
         <maven.build.timestamp.format>yyyyMMddHHmm</maven.build.timestamp.format>
         <maven.javadoc.skip>true</maven.javadoc.skip>
         <maven.update.version>2.7</maven.update.version>
-        <junit.version>4.12</junit.version>
+        <junit.version>4.13.1</junit.version>
         <spring-boot.version>2.0.6.RELEASE</spring-boot.version>
         <spring-boot-admin.version>2.0.1</spring-boot-admin.version>
         <lombok.version>1.18.8</lombok.version>
